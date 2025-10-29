@@ -1,0 +1,5 @@
+PyQt5
+qt-material
+pandas
+matplotlib
+numpy
