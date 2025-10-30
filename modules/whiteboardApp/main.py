@@ -34,7 +34,7 @@ class whiteboardApp(yarp.BottleCallback):
         self.canvas.pack(fill="both", expand=True)
 
         # Pulsante "Finito"
-        self.finish_btn = tk.Button(root, text="Finito", command=self.finish_drawing, font=("TkDefaultFont", 20))
+        self.finish_btn = tk.Button(root, text="Finito", command=self.finish_drawing, font=("Arial", 20))
         # self.finish_btn.pack(side=tk.BOTTOM, pady=20)
         #self.finish_btn.place(relx=0.5, rely=0.95, anchor="center")
 
@@ -44,7 +44,7 @@ class whiteboardApp(yarp.BottleCallback):
 
         # Lista di oggetti da disegnare
         self.objects_to_draw = [
-            "casa", "cosa"
+            "casa", "sole"
         ]
         self.current_round = 0
 
@@ -60,8 +60,10 @@ class whiteboardApp(yarp.BottleCallback):
         self.canvas.bind("<B1-Motion>", self.draw)
         self.canvas.bind("<ButtonRelease-1>", self.stop_draw)
 
-        # Drawings directory
-        os.makedirs("drawings", exist_ok=True)
+        # Drawings directory 
+        self.drawings_dir = "/usr/local/src/robot/cognitiveInteraction/guessthesketch/drawings"
+        os.makedirs(self.drawings_dir, exist_ok=True)
+
 
         # Inizia primo round
         # self.start_round()
@@ -189,10 +191,10 @@ class whiteboardApp(yarp.BottleCallback):
         y = self.root.winfo_rooty() + self.canvas.winfo_y()
         x1 = x + self.canvas.winfo_width()
         y1 = y + self.canvas.winfo_height()
-        ImageGrab.grab(bbox=(x, y, x1, y1)).save(f"drawings/{base_name}.png")
+        ImageGrab.grab(bbox=(x, y, x1, y1)).save(f"{self.drawings_dir}/{base_name}.png")
 
         # Salva CSV
-        with open(f"drawings/{base_name}.csv", "w", newline="") as f:
+        with open(f"{self.drawings_dir}/{base_name}.csv", "w", newline="") as f:
             writer = csv.writer(f)
             writer.writerow(["time", "x", "y", "mouse_pressed"])
             writer.writerows(self.positions)

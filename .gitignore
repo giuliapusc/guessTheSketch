@@ -1,6 +1,6 @@
-/build/
-/drawings 
+build/
+drawings 
 /_pycache_/
 /.vscode/
 /.idea/
-build/
+analysis/drawing_metrics_summary.csv

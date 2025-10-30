@@ -1,5 +1,4 @@
 import yarp
-import signal
 
 # Vocabs to be passed in a yarp bottle from backend to distinguish between game phases
 VOCAB_INTRO = yarp.createVocab32('I', 'N', 'T', 'R')  # 1381256777
@@ -7,7 +6,7 @@ VOCAB_RULES = yarp.createVocab32('R', 'U', 'L', 'E')  # 1162630482
 VOCAB_START_ROUND = yarp.createVocab32('R', 'N', 'D')  # 4476498
 VOCAB_DRAW = yarp.createVocab32('D', 'R', 'A', 'W')
 VOCAB_END_STATE = yarp.createVocab32('E', 'N', 'D')
-VOCAB_NEXT_ROUND = yarp.createVocab32('N', 'X', 'T')
+VOCAB_NEXT_ROUND = yarp.createVocab32('N','E', 'X', 'T') #1415071054
 VOCAB_WAIT = yarp.createVocab32('W', 'A', 'I', 'T')
 
 # Custom messages
@@ -40,10 +39,3 @@ class YarpCallbackBinder(yarp.BottleCallback):
     def onRead(self, *args):
         if self.callback is not None:
             self.callback(*args)
-
-def handle_sigint(sig, frame):
-        yarpinfo("Ctrl+C detected: closing ports...")
-        app.interrupt_module()
-        app.close_module()
-        root.destroy()
-        sys.exit(0)
