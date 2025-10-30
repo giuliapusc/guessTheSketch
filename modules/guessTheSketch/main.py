@@ -13,74 +13,29 @@ from datetime import datetime
 from utils import *
 
 
-class PublicGoodGame(yarp.RFModule):
+class guessTheSketch(yarp.RFModule):
     """
     Description:
-        Class to run the Public Good Game experiment
+        Class to run the Guess The Sketch experiment
     """
 
     def __init__(self):
         yarp.RFModule.__init__(self)
 
         # --- Module parameters ---
-        self.player1_username = "False"
-        self.player2_username = "False"
-
-        self.exp_id = "G01"
-        self.save_data_label = True
-        self.start_time = None
-        self.player1_msg = None
-        self.player2_msg = None
-        # self.player3_msg = None
         self.module_name = None
         self.process = True # True = starts automatically, False = write "start" on rpc port
+        
         # --- Game parameters ---
         self.current_state = 'intro'
-        self.previous_state = None
-        self.counter = 0
-        self.current_round = 0
-        self.num_player = 4
-        self.tot_round = 3
-        self.bonus = 1.6
-        self.max_bet = 10
-        self.average_bet = 5
-        self.strategy_percentage = 1  # between 0 and 1
-        # --- Players parameters ---
-        self.icub_bet = self.average_bet
-        self.icub_score = 0.00
-        self.icub_final_score = 0.00
-        self.player1_name = None
-        self.player1_bet = -1
-        self.player1_score = 0.00
-        self.player1_final_score = 0.00
-        self.player2_name = None
-        self.player2_bet = -1
-        self.player2_score = 0.00
-        self.player2_final_score = 0.00
-        # self.player3_name = None
-        # self.player3_bet = -1
-        # self.player3_score = 0.00
-        # self.player3_final_score = 0.00
-        # --- iCub ---
-        self.icub_profile = 'defector'  # editable in rpc
-        self.icub_mood = 'mean'  # or 'apologetic'
-        self.icub_strategy = []
-        self.icub_greets = True
-        self.icub_thinks = None
-        self.thinking_sounds = thinking_sounds  # from utils
-        self.highscore_idx = 0
-        self.highscore_comments = None
-        self.lowscore_comments = None
-        self.lowscore_idx = 0
+
         # --- Ports ---
         # rpc port
         self.handle_port = yarp.Port()
         self.attach(self.handle_port)
-        # Ports to/from publicGoodGameGUI
-        self.player1_msg_in_port = yarp.BufferedPortBottle()
-        self.player2_msg_in_port = yarp.BufferedPortBottle()
-        # self.player3_msg_in_port = yarp.BufferedPortBottle()
-        self.gui_out_port = yarp.BufferedPortBottle()
+        # Ports to/from whiteboardApp 
+        self.in_port = yarp.BufferedPortBottle()
+        self.out_port = yarp.BufferedPortBottle()
         # Port for data saving
         self.data_port = yarp.BufferedPortBottle()
         # Port to send command to interaction interface
@@ -90,40 +45,22 @@ class PublicGoodGame(yarp.RFModule):
         self.module_name = rf.check("name",
                                     yarp.Value("guessTheSketch"),
                                     "module name (string)").asString()
-
-        self.icub_profile = rf.check("robot_profile", yarp.Value("defector"), "Robot profile (string)").asString()
-        self.icub_mood = rf.check("robot_mood", yarp.Value("mean"), "Robot personality (string)").asString()
-        self.exp_id = rf.check("exp_id", yarp.Value("G01"), "Experiment ID (string)").asString()
-
+        
         # Open ports
         self.handle_port.open(f"/{self.module_name}")
-        self.player1_msg_in_port.open(f"/{self.module_name}/player1:i")
-        self.player2_msg_in_port.open(f"/{self.module_name}/player2:i")
-        # self.player3_msg_in_port.open(f"/{self.module_name}/player3:i")
-        self.gui_out_port.open(f"/{self.module_name}/gui:o")
+        self.in_port.open(f"/{self.module_name}:i")
+        self.out_port.open(f"/{self.module_name}:o")
+
         self.data_port.open(f"/{self.module_name}/data")
         self.cmd_port.open(f"/{self.module_name}/cmd:o")
 
-        self.icub_strategy = self.generate_icub_strategy()
-
-        if self.icub_mood == 'mean':
-            self.highscore_comments = highscore_mean_comments
-            self.lowscore_comments = lowscore_mean_comments
-        elif self.icub_mood == 'apologetic':
-            self.highscore_comments = highscore_apologetic_comments
-            self.lowscore_comments = lowscore_apologetic_comments
-
         yarpinfo("Initialization complete")
 
-        while not (self.gui_out_port.getOutputCount() == 2 and
-                   self.player1_msg_in_port.getInputCount() and
-                   self.player2_msg_in_port.getInputCount()
-                   # and self.player3_msg_in_port.getInputCount()
+        while not (self.out_port.getOutputCount() == 1 and
+                   self.in_port.getInputCount()
                 ):
-            yarpinfo(f"ports connected: {self.gui_out_port.getOutputCount()}")
-            yarpinfo("Waiting for connection...")
+            yarpinfo("Waiting for port connection...")
             time.sleep(1)
-
         return True
 
     def respond(self, command, reply):
@@ -138,19 +75,11 @@ class PublicGoodGame(yarp.RFModule):
             self.process = False
             reply.addString("ok")
         elif command.get(0).asString() == "help":
-            help_msg = "publicGoodGame module commands are: "
+            help_msg = "guessTheSketch module commands are: "
             help_msg += "start; "
             help_msg += "stop; "
-            help_msg += "def: set icub to defector (default); "
-            help_msg += "coo: set icub to cooperator;"
             print(help_msg)
             reply.addString(help_msg)
-        elif command.get(0).asString() == "def":
-            self.icub_profile = 'defector'
-            reply.addString("ok, profile set to defector")
-        elif command.get(0).asString() == "coo":
-            self.icub_profile = 'cooperator'
-            reply.addString("Profile set to cooperator")
         else:
             reply.addString("nak")
 
@@ -166,10 +95,8 @@ class PublicGoodGame(yarp.RFModule):
     def interruptModule(self):
         yarpinfo("Interrupting module.")
         self.handle_port.interrupt()
-        self.player1_msg_in_port.interrupt()
-        self.player2_msg_in_port.interrupt()
-        # self.player3_msg_in_port.interrupt()
-        self.gui_out_port.interrupt()
+        self.in_port.interrupt()
+        self.out_port.interrupt()
         self.data_port.interrupt()
         self.cmd_port.interrupt()
         return True
@@ -177,10 +104,8 @@ class PublicGoodGame(yarp.RFModule):
     def close(self):
         yarpinfo("Closing ports.")
         self.handle_port.close()
-        self.player1_msg_in_port.close()
-        self.player2_msg_in_port.close()
-        # self.player3_msg_in_port.close()
-        self.gui_out_port.close()
+        self.in_port.close()
+        self.out_port.close()
         self.data_port.close()
         self.cmd_port.close()
         return True

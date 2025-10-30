@@ -76,10 +76,10 @@ class whiteboardApp(yarp.BottleCallback):
 
         self.out_port.open(f"/whiteboard:o")
 
-        yarpinfo("Ports opened!")
+        guiinfo("Ports opened!")
     
     def interrupt_module(self):
-        yarpinfo("Interrupting module.")
+        guiinfo("Interrupting module.")
         self.in_port.interrupt()
         self.out_port.interrupt()
 
@@ -95,10 +95,10 @@ class whiteboardApp(yarp.BottleCallback):
         try:
             cmd = data.get(0).asVocab32()
             # cmd = data.get(0).asString()
-            yarpinfo(VOCAB_NEXT_ROUND)
-            # yarpinfo(f"Received command: {cmd}")
+            guiinfo(VOCAB_NEXT_ROUND)
+            # guiinfo(f"Received command: {cmd}")
             if cmd == VOCAB_NEXT_ROUND:
-                yarpinfo("Received NEXT ROUND command.")
+                guiinfo("Received NEXT ROUND command.")
                 self.start_round()
     
         except Exception as e:
@@ -112,9 +112,9 @@ class whiteboardApp(yarp.BottleCallback):
         # when the drawing has finished, send a message to the backend
         bottle = self.out_port.prepare()
         bottle.clear()
-        bottle.addString("end_round")
+        bottle.addVocab32(VOCAB_END_SKETCH)
         self.out_port.write()
-        yarpinfo(f"Sending end_round...")
+        guiinfo(f"Sending end_round...")
 
     def show_label_on_canvas(self, label):
         """Mostra il nome dell'oggetto al centro del canvas."""
@@ -135,7 +135,7 @@ class whiteboardApp(yarp.BottleCallback):
     def start_round(self):
         """Prepara il canvas e mostra il nuovo oggetto da disegnare."""
         
-        yarpinfo(f"Round {self.current_round + 1} starting.")
+        guiinfo(f"Round {self.current_round + 1} starting.")
 
         # remove black screen 
         self.canvas.delete("all")
@@ -198,11 +198,11 @@ class whiteboardApp(yarp.BottleCallback):
             writer = csv.writer(f)
             writer.writerow(["time", "x", "y", "mouse_pressed"])
             writer.writerows(self.positions)
-        yarpinfo(f"Drawing saved as {base_name}.png and {base_name}.csv")
+        guiinfo(f"Drawing saved as {base_name}.png and {base_name}.csv")
 
          # Send end_round to backend
         self.send_to_backend()
-        yarpinfo(f"Round {self.current_round +1} finished.")
+        guiinfo(f"Round {self.current_round +1} finished.")
 
         # Increment round count
         self.current_round += 1
@@ -218,7 +218,7 @@ class whiteboardApp(yarp.BottleCallback):
         self.finish_btn.place_forget()
 
         if self.current_round >= len(self.objects_to_draw):
-            yarpinfo("All rounds completed.")
+            guiinfo("All rounds completed.")
             self.root.after(100, self.show_end_message)
         
     def show_end_message(self):
@@ -234,7 +234,7 @@ class whiteboardApp(yarp.BottleCallback):
         )
         self.canvas.update_idletasks()
         self.canvas.update()
-        yarpinfo("Final message displayed.")
+        guiinfo("Final message displayed.")
 
 if __name__ == "__main__":
     
@@ -250,14 +250,14 @@ if __name__ == "__main__":
 
     # Add signal handler for Ctrl+C
     def handle_sigint(sig, frame):
-        yarpinfo("SIGINT detected: scheduling shutdown on GUI thread...")
+        guiinfo("SIGINT detected: scheduling shutdown on GUI thread...")
         # schedule cleanup to run in the main/UI thread
         def cleanup():
             try:
                 app.interrupt_module()
                 app.close_module()
             except Exception as e:
-                yarpinfo(f"Error during cleanup: {e}")
+                guiinfo(f"Error during cleanup: {e}")
             try:
                 root.quit()  # breaks tkinter mainloop
             except Exception:

@@ -5,7 +5,7 @@ VOCAB_INTRO = yarp.createVocab32('I', 'N', 'T', 'R')  # 1381256777
 VOCAB_RULES = yarp.createVocab32('R', 'U', 'L', 'E')  # 1162630482
 VOCAB_START_ROUND = yarp.createVocab32('R', 'N', 'D')  # 4476498
 VOCAB_DRAW = yarp.createVocab32('D', 'R', 'A', 'W')
-VOCAB_END_STATE = yarp.createVocab32('E', 'N', 'D')
+VOCAB_END_SKETCH = yarp.createVocab32('E', 'N', 'D')
 VOCAB_NEXT_ROUND = yarp.createVocab32('N','E', 'X', 'T') #1415071054
 VOCAB_WAIT = yarp.createVocab32('W', 'A', 'I', 'T')
 
@@ -16,6 +16,9 @@ def icub_msg(msg):
 
 def yarpinfo(msg):
     print("\033[92m[INFO] {}\033[00m".format(msg))
+
+def guiinfo(msg):
+    print("\033[95m[GUI] {}\033[00m".format(msg))
 
 
 def debug(msg):
