@@ -42,3 +42,5 @@ class YarpCallbackBinder(yarp.BottleCallback):
     def onRead(self, *args):
         if self.callback is not None:
             self.callback(*args)
+
+TO_DRAW_LIST = ["casa", "sole", "albero"]

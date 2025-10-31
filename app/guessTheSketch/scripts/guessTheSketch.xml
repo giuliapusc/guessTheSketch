@@ -40,6 +40,12 @@
 	<module>
 		<name>acapelaSpeak</name>
 		<parameters>--voice alessio --emotion hap</parameters>
+		<node>icubhead</node>
+	</module>
+
+	<module>
+		<name>acapelaSpeak</name>
+		<parameters>--name /acapelaSpeaker --voice Fabiana</parameters>
 		<node>icub16</node>
 	</module>
 
@@ -110,13 +116,19 @@
 
 	<connection>
 	  <output>/whiteboard:o</output>
-	  <input>/guessTheSketch/player1:i</input>
+	  <input>/guessTheSketch/whiteboard:i</input>
 	  <protocol>tcp</protocol>
 	</connection>
 
 	<connection>
-	  <output>/guessTheSketch:o</output>
+	  <output>/guessTheSketch/whiteboard:o</output>
 	  <input>/whiteboard:i</input>
+	  <protocol>tcp</protocol>
+	</connection>
+
+	<connection>
+	  <output>/guessTheSketch/speaker:o</output>
+	  <input>/acapelaSpeaker/speech:i</input>
 	  <protocol>tcp</protocol>
 	</connection>
 

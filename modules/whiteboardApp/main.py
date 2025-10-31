@@ -1,3 +1,5 @@
+# Author: Giulia Pusceddu 
+
 import tkinter as tk
 from PIL import ImageGrab
 import csv
@@ -43,9 +45,7 @@ class whiteboardApp(yarp.BottleCallback):
         self.close_btn.place(relx=0.98, rely=0.02, anchor="ne")
 
         # Lista di oggetti da disegnare
-        self.objects_to_draw = [
-            "casa", "sole"
-        ]
+        self.objects_to_draw = TO_DRAW_LIST
         self.current_round = 0
 
         # Variabili di stato
@@ -95,9 +95,9 @@ class whiteboardApp(yarp.BottleCallback):
         try:
             cmd = data.get(0).asVocab32()
             # cmd = data.get(0).asString()
-            guiinfo(VOCAB_NEXT_ROUND)
+            guiinfo(VOCAB_NEXT_SKETCH)
             # guiinfo(f"Received command: {cmd}")
-            if cmd == VOCAB_NEXT_ROUND:
+            if cmd == VOCAB_NEXT_SKETCH:
                 guiinfo("Received NEXT ROUND command.")
                 self.start_round()
     
@@ -217,7 +217,7 @@ class whiteboardApp(yarp.BottleCallback):
         # remove finish button until next round
         self.finish_btn.place_forget()
 
-        if self.current_round >= len(self.objects_to_draw):
+        if self.current_round >= MAX_ROUNDS:
             guiinfo("All rounds completed.")
             self.root.after(100, self.show_end_message)
         

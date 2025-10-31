@@ -1,4 +1,4 @@
-# Authors: Giulia Pusceddu and Sara Mongile, from Luca Garello's template
+# Authors: Giulia Pusceddu 
 # First working version:
 # Running on Python 3.10.19
 
@@ -9,6 +9,9 @@ import sys
 import os
 import json
 from datetime import datetime
+# import tkinter as tk
+# from tkinter import *
+# from tkinter import messagebox as mb
 
 from utils import *
 
@@ -24,10 +27,11 @@ class guessTheSketch(yarp.RFModule):
 
         # --- Module parameters ---
         self.module_name = None
-        self.process = True # True = starts automatically, False = write "start" on rpc port
+        self.process = False # True = starts automatically, False = write "start" on rpc port
         
         # --- Game parameters ---
         self.current_state = 'intro'
+        self.current_round = 0
 
         # --- Ports ---
         # rpc port
@@ -36,10 +40,14 @@ class guessTheSketch(yarp.RFModule):
         # Ports to/from whiteboardApp 
         self.in_port = yarp.BufferedPortBottle()
         self.out_port = yarp.BufferedPortBottle()
+        # Port to external speaker
+        self.speaker_port = yarp.BufferedPortBottle()
         # Port for data saving
         self.data_port = yarp.BufferedPortBottle()
         # Port to send command to interaction interface
         self.cmd_port = yarp.BufferedPortBottle()
+
+        self.init_save_data()
 
     def configure(self, rf):
         self.module_name = rf.check("name",
@@ -48,19 +56,22 @@ class guessTheSketch(yarp.RFModule):
         
         # Open ports
         self.handle_port.open(f"/{self.module_name}")
-        self.in_port.open(f"/{self.module_name}:i")
-        self.out_port.open(f"/{self.module_name}:o")
+        # Ports to/from whiteboardApp
+        self.in_port.open(f"/{self.module_name}/whiteboard:i")
+        self.out_port.open(f"/{self.module_name}/whiteboard:o")
+        # Port to external speaker 
+        self.speaker_port.open(f"/{self.module_name}/speaker:o")
 
         self.data_port.open(f"/{self.module_name}/data")
         self.cmd_port.open(f"/{self.module_name}/cmd:o")
 
         yarpinfo("Initialization complete")
 
-        while not (self.out_port.getOutputCount() == 1 and
-                   self.in_port.getInputCount()
-                ):
-            yarpinfo("Waiting for port connection...")
-            time.sleep(1)
+        # while not (self.out_port.getOutputCount() == 1 and
+        #            self.in_port.getInputCount()
+        #         ):
+        #     yarpinfo("Waiting for port connection...")
+        #     time.sleep(1)
         return True
 
     def respond(self, command, reply):
@@ -113,220 +124,69 @@ class guessTheSketch(yarp.RFModule):
     def updateModule(self):
         if self.process:
             # --- DATA SAVING ---
-            if self.save_data_label:
-                self.init_save_data()
-                self.save_data_label = False
-
             self.save_data()
 
             # ------ STATE MACHINE ------
             if self.current_state == 'intro':
                 yarpinfo("State is: INTRO\n")
 
-                if self.icub_greets:
-                    icub_msg("Hello!")
-                    self.icub_do("intro")
-                    self.icub_greets = False
-                    time.sleep(2)
+                # self.icub_do("intro")
+                # self.icub_greets = False
+                sentence = f"""speak "Ciao!" """
+                self.icub_do("sentence")
+                time.sleep(2)
+                self.external_voice("Benvenuti!")
+                time.sleep(2)
 
-                # Send state INTRO to GUI
-                self.send_to_GUI()
-
-                # Read player usernames
-                self.player1_username = self.read_string(buffered_port=self.player1_msg_in_port)
-                self.player2_username = self.read_string(buffered_port=self.player2_msg_in_port)
-                # self.player3_username = self.read_string(buffered_port=self.player3_msg_in_port)
-
-                if (len(self.player1_username) > 0 and len(self.player2_username) > 0
-                        # and len(self.player3_username) > 0
-                ):
-                    # Save the experiment configuration in a json file:
-                    self.save_exp_config()
-                    # iCub looks at the participants and says their names
-                    sentence = f"speak \'Ciao {self.player1_username}\'"
-                    self.icub_do("look_p1")
-                    time.sleep(1)
-                    self.icub_do(sentence)
-                    time.sleep(3)
-                    sentence = f"speak \'Tu devi essere {self.player2_username}\'"
-                    self.icub_do("look_p2")
-                    time.sleep(1)
-                    self.icub_do(sentence)
-                    time.sleep(3)
-                    # sentence = f"speak \'E infine {self.player3_username}, giusto?\'"
-                    # self.icub_do("look_p3")
-                    # time.sleep(1)
-                    # self.icub_do(sentence)
-                    # time.sleep(3)
-
-                    self.current_state = 'rules'
+                self.current_state = 'rules'
 
             elif self.current_state == 'rules':
                 yarpinfo("State is: RULES\n")
                 # Send RULES to GUI
                 self.send_to_GUI()
 
-                self.icub_do("look_down")
-                time.sleep(1)
+                speaker_msg("Rules")
+                self.external_voice("Queste sono le regole!")
+                time.sleep(5)
 
-                yarpinfo("Reading players' messages... ")
-                self.player1_msg = self.read_string(buffered_port=self.player1_msg_in_port)
-                self.player2_msg = self.read_string(buffered_port=self.player2_msg_in_port)
-                # self.player3_msg = self.read_string(buffered_port=self.player3_msg_in_port)
-
-                if (self.player1_msg == 'True' and self.player2_msg == 'True'
-                        # and self.player3_msg == 'True'
-                ):
-                    yarpinfo("Players are ready to start the game!")
-                    # iCub says it's ready to start
-                    self.icub_do("rules")
-                    time.sleep(3)
-                    self.previous_state = 'rules'
-                    self.current_state = 'startRound'
+                self.current_state = 'startRound'
 
             elif self.current_state == 'startRound':
                 yarpinfo("State is: START ROUND")
-                if self.previous_state != 'startRound':
-                    self.previous_state = 'startRound'
-                    self.current_round += 1
-                    yarpinfo(f"Round {self.current_round} of {self.tot_round}")
-                    yarpinfo(f"Strategy: {self.icub_strategy[self.current_round - 1]}")
-                    # icub makes its bet basing on the previous round's scores
-                    self.icub_bet = self.generate_icub_bet()
-                    yarpinfo(f"iCub's bet: {self.icub_bet}")
-
-                # send round number to GUI and pass to another state
-                self.send_to_GUI()
-                self.counter += 1
-
-                if self.counter >= 10:
-                    self.icub_thinks = True
-                    self.counter = 0
-                    self.current_state = 'play'
-
-            elif self.current_state == 'play':
-                yarpinfo("State is: PLAY")
-                self.send_to_GUI()
-
-                if self.icub_thinks:
-                    # Thinking sounds
-                    self.icub_do("look_down")
-                    time.sleep(1.5)
-                    index = (self.current_round - 1) % len(self.thinking_sounds)
-                    sentence = f"speak {self.thinking_sounds[index]}"
-                    icub_msg(f"{sentence}")
-                    self.icub_do(sentence)
-                    time.sleep(1.5)
-                    self.icub_thinks = False
-
-                # players choose their bet
-                # Waits until it receives something
-                # time.sleep(0.1)
-                self.player1_bet = self.read_bet(buffered_port=self.player1_msg_in_port)
-                yarpinfo(f"RECEIVED: Player 1 bet: {self.player1_bet}")
-                # time.sleep(0.1)
-                self.player2_bet = self.read_bet(buffered_port=self.player2_msg_in_port)
-                yarpinfo(f"RECEIVED: Player 2 bet: {self.player2_bet}")
-                # time.sleep(0.1)
-                # self.player3_bet = self.read_bet(buffered_port=self.player3_msg_in_port)
-
-                if self.player1_bet <= 10 and self.player2_bet <= 10:
-                        # and self.player3_bet <= 10
-                    # Compute scores
-                    self.current_score()
-                    self.final_score()  # This will be shown at the end of the exp only
-                    yarpinfo(f"Player 1 played: {self.player1_bet}")
-                    yarpinfo(f"Player 2 played: {self.player2_bet}")
-                    # yarpinfo(f"Player 3 played: {self.player3_bet}")
-                    yarpinfo(f"iCub played: {self.icub_bet}")
-                    self.previous_state = 'play'
-                    self.current_state = 'roundScore'
-
-            elif self.current_state == 'roundScore':
-                yarpinfo("State is: ROUND SCORES")
-                yarpinfo(f"Player 1: {self.player1_score} \n "
-                         f"Player 2: {self.player2_score}\n "
-                         # f"Player 3: {self.player3_score}\n "
-                         f"iCub: {self.icub_score}\n")
-
-                self.send_to_GUI()
-                self.counter += 1
-
-                if self.counter >= 10:
-                    self.counter = 0
-                    # CASE: icub score is the highest of the round
-                    if self.icub_score > max(self.player1_score, self.player2_score): # , self.player3_score):
-                        min_score = min(self.player1_score, self.player2_score) # self.player3_score)
-                        # iCub looks at the player with the lowest score
-                        if self.player1_score == min_score:
-                            self.icub_do("look_p1")
-                        elif self.player2_score == min_score:
-                            self.icub_do("look_p2")
-                        # elif self.player3_score == min_score:
-                        #     self.icub_do("look_p3")
-                        time.sleep(1)
-                        # If mean, says something nasty, if apologetic, apologizes (bo-ri-ng!)
-                        if self.icub_mood == 'mean':
-                            self.icub_do("smile")
-                        else:
-                            self.icub_do("neutral")
-                        time.sleep(1)
-                        # iCub comments the results
-                        sentence = f"speak {self.highscore_comments[self.highscore_idx]}"
-                        icub_msg(f"{sentence}")
-                        self.icub_do(sentence)
-                        self.highscore_idx += 1
-
-                    # CASE: icub score is the lowest of the round
-                    elif self.icub_score < min(self.player1_score, self.player2_score): #, self.player3_score):
-                        max_score = max(self.player1_score, self.player2_score) #, self.player3_score)
-                        # iCub looks at the player with the lowest score
-                        if self.player1_score == max_score:
-                            self.icub_do("look_p1")
-                        elif self.player2_score == max_score:
-                            self.icub_do("look_p2")
-                        # elif self.player3_score == max_score:
-                        #     self.icub_do("look_p3")
-                        time.sleep(1)
-                        if self.icub_mood == 'mean':
-                            self.icub_do("angry")
-                        else:
-                            self.icub_do("sad")
-                        time.sleep(1)
-                        sentence = f"speak {self.lowscore_comments[self.lowscore_idx]}"
-                        icub_msg(f"{sentence}")
-                        self.icub_do(sentence)
-                        self.lowscore_idx += 1
-
-                    time.sleep(3)  # Show results for ten seconds
-                    self.icub_do("smile")
-                    time.sleep(1)
-                    self.icub_do("start_pos")
-                    # time.sleep(2)
-
-                    self.previous_state = 'roundScore'
-                    if self.current_round == self.tot_round:
-                        self.current_state = 'finalScore'
-                    else:
-                        self.current_state = 'startRound'
-
-            elif self.current_state == 'finalScore':
-                yarpinfo("State is: FINAL SCORE")
-                # Final scores have been already computed in roundScore.
-
-                for idx in range(10):
+                if self.current_round >= MAX_ROUNDS:
+                    self.current_state = 'endState'
+                else: 
                     self.send_to_GUI()
-                    yarpinfo("Sending FINAL SCORE to GUI")
+                    time.sleep(2)
+                    self.current_round += 1
+                    self.current_state = 'sketch'
 
-                sentence = "speak \"Fine del gioco!\""
-                time.sleep(2)
-                self.icub_do(sentence)
-                time.sleep(2)
+            elif self.current_state == 'sketch':
+                yarpinfo("State is: SKETCH")
+                msg_from_whiteboard = self.read_vocab(buffered_port=self.in_port)
 
-                self.current_state = 'endState'
+                if msg_from_whiteboard ==  VOCAB_END_SKETCH:
+                    self.current_state = 'understood'
+
+            elif self.current_state == 'understood':
+                yarpinfo("State is: UNDERSTOOD")
+                # open a window to ask if the sketch has been understood Y/N
+                
+                # Remain in this state until we get the answer
+                # save the answer
+
+                if self.current_round in ERROR_ROUNDS:
+                    self.external_voice("Aicab non ha capito.")
+                else:
+                    self.external_voice("Aicab ha capito.")
+
+                self.current_state = 'startRound'
 
             elif self.current_state == 'endState':
                 yarpinfo("State is: END STATE.\n The experiment ends.")
+                self.external_voice("Grazie per aver partecipato!")
+                sentence = f"""speak "Arrivederci!" """
+                self.icub_do(sentence)
                 self.close()
                 self.interruptModule()
 
@@ -337,37 +197,30 @@ class guessTheSketch(yarp.RFModule):
     def init_save_data(self):
         bottle = self.data_port.prepare()
         bottle.clear()
-        row = (f"current_round current_state icub_strategy "
-               f"player1_bet player2_bet icub_bet " # f"player1_bet player2_bet player3_bet icub_bet "
-               f"player1_score player2_score icub_score " # f"player1_score player2_score player3_score icub_score "
-               f"player1_final_score player2_final_score icub_final_score\n") # f"player1_final_score player2_final_score player3_final_score icub_final_score\n")
+        row = (f"current_round current_state\n") 
         bottle.addString(row)
         self.data_port.write()
 
     def save_data(self):
         bottle = self.data_port.prepare()
         bottle.clear()
-        row = (f"{self.current_round} {self.current_state} {self.icub_strategy[self.current_round - 1]} "
-               f"{self.player1_bet} {self.player2_bet} {self.icub_bet} " # {self.player3_bet}
-               f"{self.player1_score} {self.player2_score} {self.icub_score} " # {self.player3_score}
-               f"{self.player1_final_score} {self.player2_final_score} " # {self.player3_final_score}
-               f"{self.icub_final_score}")
+        row = (f"{self.current_round} {self.current_state}")
         bottle.addString(row)
         self.data_port.write()
 
     def save_exp_config(self):
-        variables_to_save = ['exp_id', 'player1_username', 'player2_username', # 'player3_username',
+        variables_to_save = ['exp_id', 'player1_username', 'player2_username',
                              'tot_round', 'bonus', 'strategy_percentage', 'icub_profile', 'icub_mood']
 
         # Create dictionary to hold selected variables
         variables = {}
-        for name, value in zip(publicGoodGames.__dict__.keys(), publicGoodGames.__dict__.values()):
+        for name, value in zip(guessthesketch.__dict__.keys(), guessthesketch.__dict__.values()):
             if name in variables_to_save:
                 variables[name] = value
         variables["date_time"] = datetime.now()
 
         # Define the folder path
-        folder_path = "publicGoodGame_data"
+        folder_path = "data"
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
 
@@ -389,147 +242,40 @@ class guessTheSketch(yarp.RFModule):
         return msg
 
     @staticmethod
-    def read_bet(buffered_port):
-        msg = int()
-        if buffered_port.getInputCount():
-            # msg = buffered_port.read(True).get(0).asInt32()
-            msg_bottle = buffered_port.read(shouldWait=True)
-            if msg_bottle is not None:
-                msg = msg_bottle.get(0).asInt32()
-            else:
-                warning(f"msg bet is none")
-        return msg
-
-    @staticmethod
     def read_vocab(buffered_port):
         msg = int()
         if buffered_port.getInputCount():
-            msg = buffered_port.read().get(0).asVocab32()
+            msg_bottle = buffered_port.read(shouldWait=True)
+            if msg_bottle is not None:
+                msg = msg_bottle.get(0).asVocab32()
+            
+            # cmd = data.get(0).asVocab32()
+            debug(f"reading vocab32: {msg}")
         return msg
 
     def send_to_GUI(self):
-        bottle = self.gui_out_port.prepare()
+        bottle = self.out_port.prepare()
         bottle.clear()
 
         if self.current_state == 'intro':
             # if self.gui_out_port.getOutputCount() == 3:
             bottle.addVocab32(VOCAB_INTRO)
-            yarpinfo(f"Sending INTRO...")
 
         elif self.current_state == 'rules':
             bottle.addInt32(VOCAB_RULES)
-            bottle.addString(self.player1_username)
-            bottle.addString(self.player2_username)
-            # bottle.addString(self.player3_username)
 
         elif self.current_state == 'startRound':
-            bottle.addInt32(VOCAB_START_ROUND)
-            bottle.addInt32(self.current_round)
-            bottle.addInt32(self.tot_round)
-
-        elif self.current_state == 'play':
-            bottle.addInt32(VOCAB_PLAY)
-
-        elif self.current_state == 'roundScore':
-            bottle.addInt32(VOCAB_ROUND_SCORE)
-            bottle.addFloat32(self.player1_bet)
-            bottle.addFloat32(self.player2_bet)
-            # bottle.addInt32(self.player3_bet)
-            bottle.addFloat32(self.icub_bet)
-            bottle.addFloat32(self.player1_score)
-            bottle.addFloat32(self.player2_score)
-            # bottle.addFloat32(self.player3_score)
-            bottle.addFloat32(self.icub_score)
-
-        elif self.current_state == 'finalScore':
-            bottle.addInt32(VOCAB_FINAL_SCORE)
-            bottle.addFloat32(self.player1_final_score)
-            bottle.addFloat32(self.player2_final_score)
-            # bottle.addFloat32(self.player3_final_score)
-            bottle.addFloat32(self.icub_final_score)
+            bottle.addInt32(VOCAB_NEXT_SKETCH)
 
         elif self.current_state == 'endState':
-            bottle.addInt32(VOCAB_END_STATE)
+            bottle.addInt32(VOCAB_FINISH)
 
-        self.gui_out_port.write()
+        self.out_port.write()
 
     @staticmethod
     def clear_bottle(buffered_port):
         bottle = buffered_port.prepare()
         bottle.clear()
-
-    def generate_icub_strategy(self):
-        """
-        This method creates a list containing the strategy for icub for each round. The strategy will be in line with
-        icub_profile for the strategy_percentage % of the times.
-        :return:
-        """
-        profile_count = int(self.tot_round * self.strategy_percentage)
-        non_profile_count = self.tot_round - profile_count
-        # in line with icub_profile
-        for _ in range(profile_count):
-            self.icub_strategy.append(self.icub_profile)
-        # exceptions
-        possible_icub_strategies = ['defector', 'cooperator']
-        if self.icub_profile in possible_icub_strategies:
-            possible_icub_strategies.remove(self.icub_profile)
-        for _ in range(non_profile_count):
-            self.icub_strategy.append(random.choice(possible_icub_strategies))
-
-        random.shuffle(self.icub_strategy)
-
-        return self.icub_strategy
-
-    def generate_icub_bet(self):
-        # % of decrease / increase with respect to the average bet
-        # normal distribution around mu = 0.5 and sd = 0.1
-        increase_decrease_perc = np.random.normal(0.5, 0.1)
-        increase_decrease_perc = min(max(0.0, increase_decrease_perc), 1.0)
-        # --- DEFECTOR ---
-        if self.icub_strategy[self.current_round - 1] == 'defector':
-            # if it has bet more than average decreases next bet that needs to be average_bet or less
-            if self.icub_bet >= self.average_bet:
-                self.icub_bet = min(self.icub_bet - increase_decrease_perc * self.icub_bet, self.average_bet)
-            # if it has bet less than average, decreases next bet or keeps it as before, but not more than average
-            else:
-                self.icub_bet = min(self.icub_bet + increase_decrease_perc * (self.max_bet - self.icub_bet),
-                                    self.average_bet)
-        # --- COOPERATOR ---
-        elif self.icub_strategy[self.current_round - 1] == 'cooperator':
-            # if it has bet more than average increases next bet
-            if self.icub_bet <= self.average_bet:
-                self.icub_bet = max(self.icub_bet + increase_decrease_perc * (self.max_bet - self.icub_bet),
-                                    self.average_bet)
-            # if it has bet more than average keeps it as before or decreases it
-            else:
-                self.icub_bet = max(self.icub_bet - increase_decrease_perc * self.icub_bet, self.average_bet)
-        #
-        return int(self.icub_bet)
-
-    def current_score(self):
-        common_plate = self.player1_bet + self.player2_bet + self.icub_bet # + self.player3_bet
-        self.average_bet = common_plate / self.num_player
-        self.player1_score = self.max_bet - self.player1_bet + self.average_bet * self.bonus
-        self.player2_score = self.max_bet - self.player2_bet + self.average_bet * self.bonus
-        # self.player3_score = self.max_bet - self.player3_bet + self.average_bet * self.bonus
-        self.icub_score = self.max_bet - self.icub_bet + self.average_bet * self.bonus
-
-        self.player1_score = round(self.player1_score, 2)
-        self.player2_score = round(self.player2_score, 2)
-        # self.player3_score = round(self.player3_score, 2)
-        self.icub_score = round(self.icub_score, 2)
-
-    def final_score(self):
-        # take the previous score and sum it
-        self.player1_final_score += self.player1_score
-        self.player2_final_score += self.player2_score
-        # self.player3_final_score += self.player3_score
-        self.icub_final_score += self.icub_score
-
-    def wait(self, seconds):
-        self.start_time = time.time()
-        while time.time() - self.start_time < seconds:
-            pass
 
     def icub_do(self, action):
         """
@@ -542,6 +288,17 @@ class guessTheSketch(yarp.RFModule):
         cmd_bottle.addString("exe")
         cmd_bottle.addString(action)
         self.cmd_port.write()
+        icub_msg(action)
+    
+    def external_voice(self, speech):
+        # send text to acapelaSpeak
+        if self.speaker_port.getOutputCount():
+            speaker_bottle = self.speaker_port.prepare()
+            speaker_bottle.clear()
+            speaker_bottle.addString(speech)
+            self.speaker_port.write()
+            speaker_msg(speech)
+
 
 
 if __name__ == '__main__':
@@ -552,14 +309,14 @@ if __name__ == '__main__':
         sys.exit(1)
 
     yarp.Network.init()
-    publicGoodGames = PublicGoodGame()
+    guessthesketch = guessTheSketch()
 
     rf = yarp.ResourceFinder()
     rf.setVerbose(True)
-    rf.setDefaultContext('publicGoodGame')
-    rf.setDefaultConfigFile("publicGoodGameConfig.ini")
+    rf.setDefaultContext('guessTheSketch')
+    rf.setDefaultConfigFile("guessTheSketch.ini")
 
     if rf.configure(sys.argv):
-        publicGoodGames.runModule(rf)
+        guessthesketch.runModule(rf)
 
     sys.exit()
