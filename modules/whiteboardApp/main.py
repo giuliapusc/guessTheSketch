@@ -2,11 +2,11 @@
 
 import tkinter as tk
 from PIL import ImageGrab
+from utils import *
 import csv
 import os
 import datetime
 import time
-from yarp_utils import *
 import sys
 import signal
 
@@ -98,6 +98,7 @@ class whiteboardApp(yarp.BottleCallback):
             guiinfo(VOCAB_NEXT_SKETCH)
             # guiinfo(f"Received command: {cmd}")
             if cmd == VOCAB_NEXT_SKETCH:
+                # todo: aggiungere error/non error
                 guiinfo("Received NEXT ROUND command.")
                 self.start_round()
     

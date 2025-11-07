@@ -185,8 +185,10 @@ class guessTheSketch(yarp.RFModule):
             elif self.current_state == 'endState':
                 yarpinfo("State is: END STATE.\n The experiment ends.")
                 self.external_voice("Grazie per aver partecipato!")
+                time.sleep(2)
                 sentence = f"""speak "Arrivederci!" """
                 self.icub_do(sentence)
+                
                 self.close()
                 self.interruptModule()
 
@@ -260,15 +262,19 @@ class guessTheSketch(yarp.RFModule):
         if self.current_state == 'intro':
             # if self.gui_out_port.getOutputCount() == 3:
             bottle.addVocab32(VOCAB_INTRO)
+            yarpinfo(f"Sent INTRO to GUI: {VOCAB_INTRO}")
 
         elif self.current_state == 'rules':
             bottle.addInt32(VOCAB_RULES)
+            yarpinfo(f"Sent RULES to GUI: {VOCAB_RULES}")
 
         elif self.current_state == 'startRound':
             bottle.addInt32(VOCAB_NEXT_SKETCH)
+            yarpinfo(f"Sent NEXT ROUND to GUI: {VOCAB_NEXT_SKETCH}")
 
         elif self.current_state == 'endState':
             bottle.addInt32(VOCAB_FINISH)
+            yarpinfo(f"Sent FINISH to GUI: {VOCAB_FINISH}")
 
         self.out_port.write()
 

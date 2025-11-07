@@ -1,13 +1,13 @@
 import yarp
 
 # Vocabs to be passed in a yarp bottle from backend to distinguish between game phases
-VOCAB_INTRO = yarp.createVocab32('I', 'N', 'T', 'R')  # 1381256777
-VOCAB_RULES = yarp.createVocab32('R', 'U', 'L', 'E')  # 1162630482
-VOCAB_START_ROUND = yarp.createVocab32('R', 'N', 'D')  # 4476498
-VOCAB_DRAW = yarp.createVocab32('D', 'R', 'A', 'W')
+VOCAB_INTRO = yarp.createVocab32('I', 'N', 'T', 'R')
+VOCAB_RULES = yarp.createVocab32('R', 'U', 'L', 'E')
+VOCAB_START_ROUND = yarp.createVocab32('R', 'N', 'D')
+VOCAB_PLAY = yarp.createVocab32('P', 'L', 'A', 'Y')
+VOCAB_NEXT_SKETCH = yarp.createVocab32('N', 'X', 'T') 
 VOCAB_END_SKETCH = yarp.createVocab32('E', 'N', 'D')
-VOCAB_NEXT_ROUND = yarp.createVocab32('N','E', 'X', 'T') #1415071054
-VOCAB_WAIT = yarp.createVocab32('W', 'A', 'I', 'T')
+VOCAB_FINISH = yarp.createVocab32('F', 'I', 'N', 'I')
 
 # Custom messages
 def icub_msg(msg):
@@ -43,4 +43,9 @@ class YarpCallbackBinder(yarp.BottleCallback):
         if self.callback is not None:
             self.callback(*args)
 
-TO_DRAW_LIST = ["casa", "sole", "albero"]
+TO_DRAW_LIST = ["arancia", "palla", 
+                "Giovanna", "Navel", 
+                'parco', 'casa', 
+                'cane', 'gatto']
+
+MAX_ROUNDS = len(TO_DRAW_LIST)

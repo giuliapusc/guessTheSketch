@@ -43,5 +43,9 @@ thinking_sounds = (
     "'#THROAT03#'", "'#MMM02#'")
 # --------------------------------------------
 # -----------Game Parameters----------------
-MAX_ROUNDS = 5
-ERROR_ROUNDS = [2, 4]
+TO_DRAW_LIST = ["arancia", "palla", 
+                "Giovanna", "Navel", 
+                'parco', 'casa', 
+                'cane', 'gatto']
+MAX_ROUNDS = len(TO_DRAW_LIST)
+ERROR_ROUNDS = [2]
