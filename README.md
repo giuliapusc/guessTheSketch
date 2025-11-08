@@ -48,12 +48,12 @@ Install examples:
 ## How to install 
 Copy https address of the code on GitLab. 
 Go in the /usr/local/src/robot/cognitiveInteraction/ directory, open a terminal and write: 
-''' 
+'''bash 
 git clone <paste https address here>
 '''
 
 then write 
-'''
+'''bash
 mkdir build 
 cd build 
 ccmake ..
@@ -62,12 +62,12 @@ make install
 
 ## How to run
 Open a terminal and write: 
-'''
+'''bash
 yarp server 
 ''' 
 
 Open another terminal and write 
-''' 
+'''bash 
 yarp manager 
 ''' 
 
@@ -78,12 +78,12 @@ Run "guessTheSketch".
 Click "connect all" to connect all the available ports. 
 
 Open another terminal and write: 
-''' 
+'''bash 
 yarp rpc /guessTheSketch
 ''' 
 
 then, after the ">>" write 
-'''
+'''bash
 start
 '''
 
