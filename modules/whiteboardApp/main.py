@@ -24,7 +24,7 @@ class whiteboardApp(yarp.BottleCallback):
 
 
         self.root = root
-        self.root.title("Whiteboard Drawing Task")
+        self.root.title("Guess the Sketch - Whiteboard App")
 
         # Schermo intero
         self.root.attributes('-fullscreen', True)
@@ -45,7 +45,12 @@ class whiteboardApp(yarp.BottleCallback):
         self.close_btn.place(relx=0.98, rely=0.02, anchor="ne")
 
         # Lista di oggetti da disegnare
-        self.objects_to_draw = TO_DRAW_LIST
+        # double x[0] objects with x[1]==1 are objects to be redrawn due to error
+        self.objects_to_draw = expanded_rounds
+
+        yarpinfo(f"Objects to draw: {self.objects_to_draw}\nErrors at rounds: {REDO_ROUNDS}\nMax rounds: {MAX_ROUNDS}")
+
+    
         self.current_round = 0
 
         # Variabili di stato
@@ -125,10 +130,15 @@ class whiteboardApp(yarp.BottleCallback):
         w = self.canvas.winfo_width()
         h = self.canvas.winfo_height()
 
+        if self.current_round in REDO_ROUNDS:
+            message = f"Rifai il disegno di: {label}"
+        else:
+            message = f"Disegna: {label}"
+
         self.canvas.create_text(
             w / 2,
             h / 2,
-            text=f"Disegna: {label}",
+            text=message,
             font=("Arial", 60, "bold"),
             fill="black"
         )

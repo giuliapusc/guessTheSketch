@@ -9,10 +9,6 @@ import sys
 import os
 import json
 from datetime import datetime
-# import tkinter as tk
-# from tkinter import *
-# from tkinter import messagebox as mb
-
 from utils import *
 
 
@@ -170,15 +166,20 @@ class guessTheSketch(yarp.RFModule):
 
             elif self.current_state == 'understood':
                 yarpinfo("State is: UNDERSTOOD")
-                # open a window to ask if the sketch has been understood Y/N
+                #TODO open a window to ask if the sketch has been understood Y/N
                 
                 # Remain in this state until we get the answer
                 # save the answer
 
-                if self.current_round in ERROR_ROUNDS:
-                    self.external_voice("Aicab non ha capito.")
-                else:
+                if self.current_round in REDO_ROUNDS:
+                    self.external_voice("Aicab non ha capito. Rifai il disegno.")
+                    time.sleep(5)
+                elif self.current_round -1 in REDO_ROUNDS:
+                    self.external_voice("Grazie! Ora Aicab ha capito.")
+                    time.sleep(2)
+                else: 
                     self.external_voice("Aicab ha capito.")
+                    time.sleep(2)
 
                 self.current_state = 'startRound'
 

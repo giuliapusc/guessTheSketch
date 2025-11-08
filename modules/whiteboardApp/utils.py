@@ -43,9 +43,26 @@ class YarpCallbackBinder(yarp.BottleCallback):
         if self.callback is not None:
             self.callback(*args)
 
-TO_DRAW_LIST = ["arancia", "palla", 
-                "Giovanna", "Navel", 
-                'parco', 'casa', 
-                'cane', 'gatto']
+TO_DRAW_LIST = [("arancia", 0), 
+                ("palla", 1), 
+                ("Giovanna", 0), 
+                ("Navel", 1), 
+                ('parco', 0), 
+                ('casa', 1), 
+                ('cane', 0), 
+                ('gatto', 1)]
 
-MAX_ROUNDS = len(TO_DRAW_LIST)
+MAX_ROUNDS = len(TO_DRAW_LIST) + sum(x[1] for x in TO_DRAW_LIST)
+
+expanded_rounds = []
+REDO_ROUNDS = []   # indici 0-based dei redo nel vettore espanso
+
+
+for name, redo in TO_DRAW_LIST:
+    expanded_rounds.append(name)
+    if redo == 1:
+        REDO_ROUNDS.append(len(expanded_rounds) - 1)  # salva indice della prima volta
+        expanded_rounds.append(name)  # aggiungi il redo
+
+# add 1 to every element in REDO_ROUNDS 
+REDO_ROUNDS = [x + 1 for x in REDO_ROUNDS]
