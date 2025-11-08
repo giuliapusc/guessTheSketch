@@ -48,28 +48,28 @@ Install examples:
 ## How to install 
 Copy https address of the code on GitLab. 
 Go in the /usr/local/src/robot/cognitiveInteraction/ directory, open a terminal and write: 
-'''bash 
+```bash
 git clone <paste https address here>
-'''
+```
 
 then write 
-'''bash
+```bash
 mkdir build 
 cd build 
 ccmake ..
 make install 
-'''
+```
 
 ## How to run
 Open a terminal and write: 
-'''bash
+```bash
 yarp server 
-''' 
+```
 
 Open another terminal and write 
-'''bash 
+```bash
 yarp manager 
-''' 
+```
 
 A GUI will open. In "Apllications" click on "guessTheSketch". 
 Run "whiteboardApp". 
