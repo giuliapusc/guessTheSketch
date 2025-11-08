@@ -78,14 +78,14 @@ Run "guessTheSketch".
 Click "connect all" to connect all the available ports. 
 
 Open another terminal and write: 
-'''bash 
+```bash
 yarp rpc /guessTheSketch
-''' 
+```
 
 then, after the ">>" write 
-'''bash
+```bash
 start
-'''
+```
 
 At the end of the experiment stop the modules. You can use the up-right "x" to close the whiteboardApp. 
 
