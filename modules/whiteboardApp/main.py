@@ -9,8 +9,8 @@ import time
 import sys
 import signal
 import sys
-sys.path.insert(1, '../')
 
+sys.path.insert(1, '/usr/local/src/robot/cognitiveInteraction/guessthesketch/modules/guessTheSketch')
 from utils import *
 
 class whiteboardApp(yarp.BottleCallback):
@@ -71,6 +71,18 @@ class whiteboardApp(yarp.BottleCallback):
         # Drawings directory 
         self.drawings_dir = "/usr/local/src/robot/cognitiveInteraction/guessthesketch/drawings"
         os.makedirs(self.drawings_dir, exist_ok=True)
+
+        # Create incremental subdirectories names: 01, 02, ...
+        existing_dirs = [d for d in os.listdir(self.drawings_dir) if os.path.isdir(os.path.join(self.drawings_dir, d)) and d.isdigit()]
+        if existing_dirs:
+            last_dir = max(int(d) for d in existing_dirs)
+            self.dir_number = f"{last_dir + 1:02d}"
+        else:
+            self.dir_number = "01"
+        self.drawings_dir = os.path.join(self.drawings_dir, self.dir_number)
+        os.makedirs(self.drawings_dir, exist_ok=True)
+        guiinfo(f"Drawings will be saved in: {self.drawings_dir}")
+
 
 
         # Inizia primo round
@@ -205,7 +217,7 @@ class whiteboardApp(yarp.BottleCallback):
         y = self.root.winfo_rooty() + self.canvas.winfo_y()
         x1 = x + self.canvas.winfo_width()
         y1 = y + self.canvas.winfo_height()
-        ImageGrab.grab(bbox=(x, y, x1, y1)).save(f"{self.drawings_dir}/{base_name}.png")
+        ImageGrab.grab(bbox=(x, y, x1, y1)).save(f"{self.drawings_dir}/{self.dir_number}_{base_name}.png")
 
         # Salva CSV
         with open(f"{self.drawings_dir}/{base_name}.csv", "w", newline="") as f:

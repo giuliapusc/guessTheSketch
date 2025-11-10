@@ -12,6 +12,8 @@ def speaker_msg(msg):
 def yarpinfo(msg):
     print("\033[92m[INFO] {}\033[00m".format(msg))
 
+def guiinfo(msg):
+    print("\033[95m[INFO] {}\033[00m".format(msg))
 
 def debug(msg):
     print("\033[96m[DEBUG] {}\033[00m".format(msg))
@@ -53,7 +55,7 @@ thinking_sounds = (
 #                 ('gatto', 1)]
 
 
-df=pd.read_csv("drawing_list.csv", header=None)
+df=pd.read_csv("/usr/local/src/robot/cognitiveInteraction/guessthesketch/modules/guessTheSketch/drawing_list.csv", header=None)
 TO_DRAW_LIST=list(df.itertuples(index=False, name=None))
 
 MAX_ROUNDS = len(TO_DRAW_LIST) + sum(x[1] for x in TO_DRAW_LIST)
