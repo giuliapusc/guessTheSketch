@@ -73,10 +73,10 @@ class whiteboardApp(yarp.BottleCallback):
         os.makedirs(self.drawings_dir, exist_ok=True)
 
         # Create incremental subdirectories names: 01, 02, ...
-        existing_dirs = [d for d in os.listdir(self.drawings_dir) if os.path.isdir(os.path.join(self.drawings_dir, d)) and d.isdigit()]
+        existing_dirs = [d for d in os.listdir(self.drawings_dir) if os.path.isdir(os.path.join(self.drawings_dir, d)) and d.isdigit()] # list of directories
         if existing_dirs:
-            last_dir = max(int(d) for d in existing_dirs)
-            self.dir_number = f"{last_dir + 1:02d}"
+            last_dir = max(int(d) for d in existing_dirs) # get the highest directory number after converting to int
+            self.dir_number = f"{last_dir + 1:02d}" # add 1 with two digits format
         else:
             self.dir_number = "01"
         self.drawings_dir = os.path.join(self.drawings_dir, self.dir_number)
@@ -211,6 +211,7 @@ class whiteboardApp(yarp.BottleCallback):
             return
         timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         base_name = f"{self.current_label}_{timestamp}"
+        base_name = base_name.replace(" ", "_") # not tested
 
         # Salva immagine
         x = self.root.winfo_rootx() + self.canvas.winfo_x()
@@ -220,7 +221,7 @@ class whiteboardApp(yarp.BottleCallback):
         ImageGrab.grab(bbox=(x, y, x1, y1)).save(f"{self.drawings_dir}/{self.dir_number}_{base_name}.png")
 
         # Salva CSV
-        with open(f"{self.drawings_dir}/{base_name}.csv", "w", newline="") as f:
+        with open(f"{self.drawings_dir}/{self.dir_number}_{base_name}.csv", "w", newline="") as f:
             writer = csv.writer(f)
             writer.writerow(["time", "x", "y", "mouse_pressed"])
             writer.writerows(self.positions)
