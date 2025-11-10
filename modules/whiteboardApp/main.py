@@ -2,13 +2,16 @@
 
 import tkinter as tk
 from PIL import ImageGrab
-from utils import *
 import csv
 import os
 import datetime
 import time
 import sys
 import signal
+import sys
+sys.path.insert(1, '../')
+
+from utils import *
 
 class whiteboardApp(yarp.BottleCallback):
     def __init__(self, root):
