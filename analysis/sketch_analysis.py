@@ -132,7 +132,7 @@ if __name__ == "__main__":
     for file in os.listdir(folder):
         if file.endswith(".csv"):
             path = os.path.join(folder, file)
-            metrics = analyze_drawing(path, visualize=True)
+            metrics = analyze_drawing(path, visualize=False)
             if metrics:
                 results.append(metrics)
                 print(metrics)

@@ -4,61 +4,6 @@
 
     <!-- ==================== MODULES ==================== -->
 
- 	<module>
-		<name>interactionInterface</name>
-		<parameters>--config guessTheSketch.sh --context guessTheSketch</parameters>
-		<node>icub16</node>
-	</module>
-
-	<module>
-		<name>iKinGazeCtrl</name>
-        <node>icub16</node>
-        <parameters>--from iKinGazeCtrl.ini --cameras::file icubEyes_1024x768.ini</parameters>
-        <dependencies>
-            <port timeout="40">/icub/head/state:o</port>
-        </dependencies>
-	</module>
-
-	<module>
-		<name>ctpService</name>
-		<parameters>--robot icub --part torso</parameters>
-		<node>icub16</node>
-	</module>
-
-	<module>
-		<name>ctpService</name>
-		<parameters>--robot icub --part right_arm</parameters>
-		<node>icub16</node>
-	</module>
-
-	<module>
-		<name>ctpService</name>
-		<parameters>--robot icub --part left_arm</parameters>
-		<node>icub16</node>
-	</module>
-
-	<module>
-		<name>acapelaSpeak</name>
-		<parameters>--voice alessio --emotion hap</parameters>
-		<node>icubhead</node>
-	</module>
-
-	<module>
-		<name>acapelaSpeak</name>
-		<parameters>--name /acapelaSpeaker --voice Fabiana</parameters>
-		<node>icub16</node>
-	</module>
-
-	<module>
-		<name>duoEmotionInterface</name>
-		<node>icub-b1</node>
-	</module>
-
-	<module>
-		<name>ledController</name>
-		<node>pc104</node>
-	</module>
-
 	<module>
 		<name>guessTheSketch</name>
 		<node>localhost</node>
@@ -69,50 +14,7 @@
 		<node>localhost</node>
 	</module>
 
-	<module>
-        <name>--- Modules below are to save data --- </name>
-        <parameters>Do not run this line!</parameters>
-		<node>----</node>
-    </module>
-
-	<module>
-        <name>yarpdatadumper</name>
-        <parameters> --name /dump_data --dir publicGoodGame/text_data</parameters>
-        <node>localhost</node>
-    </module>
-
-	<module>
-        <name>yarpdev</name>
-        <parameters>--device opencv_grabber --name /player_cam --period 60 </parameters>
-        <node>localhost</node>
-    </module>
-
-    <module>
-        <name>yarpdatadumper</name>
-        <parameters> --name /dump_player_cam --dir publicGoodGame/cam_data/player1 --type image --txTime</parameters>
-        <node>localhost</node>
-    </module>
-
-
     <!-- ==================== CONNECTIONS ==================== -->
-
-	<connection>
-		<from>/guessTheSketch/cmd:o</from>
-		<to>/interactionInterface</to>
-		<protocol>tcp</protocol>
-	</connection>
-
-	<connection>
-		<from> /acapelaSpeak/emotion:o </from>
-		<to> /icub/face/emotions/in </to>
-		<protocol>tcp</protocol>
-	</connection>
-
-	<connection>
-		<from>/icub/face/emotions/led/out</from>
-		<to>/icub/face/led/raw/in</to>
-		<protocol>tcp</protocol>
-	</connection>
 
 	<connection>
 	  <output>/whiteboard:o</output>
@@ -125,12 +27,5 @@
 	  <input>/whiteboard:i</input>
 	  <protocol>tcp</protocol>
 	</connection>
-
-	<connection>
-	  <output>/guessTheSketch/speaker:o</output>
-	  <input>/acapelaSpeaker/speech:i</input>
-	  <protocol>tcp</protocol>
-	</connection>
-
 
 </application>
