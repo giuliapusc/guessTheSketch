@@ -1,5 +1,5 @@
 import yarp
-
+import pandas as pd
 
 # ---------------------------------------------------------
 # Personalize messages colors
@@ -43,14 +43,18 @@ thinking_sounds = (
     "'#THROAT03#'", "'#MMM02#'")
 # --------------------------------------------
 # -----------Game Parameters----------------
-TO_DRAW_LIST = [("arancia", 0), # potrei aggiungere azione come terzo elemento della tupla 
-                ("palla", 1), 
-                ("Giovanna", 0), 
-                ("Navel", 1), 
-                ('parco', 0), 
-                ('casa', 1), 
-                ('cane', 0), 
-                ('gatto', 1)]
+# TO_DRAW_LIST = [("arancia", 0), # potrei aggiungere azione come terzo elemento della tupla 
+#                 ("palla", 1), 
+#                 ("Giovanna", 0), 
+#                 ("Navel", 1), 
+#                 ('parco', 0), 
+#                 ('casa', 1), 
+#                 ('cane', 0), 
+#                 ('gatto', 1)]
+
+
+df=pd.read_csv("drawing_list.csv", header=None)
+TO_DRAW_LIST=list(df.itertuples(index=False, name=None))
 
 MAX_ROUNDS = len(TO_DRAW_LIST) + sum(x[1] for x in TO_DRAW_LIST)
 
