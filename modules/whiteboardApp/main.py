@@ -51,6 +51,7 @@ class whiteboardApp(yarp.BottleCallback):
         # double x[0] objects with x[1]==1 are objects to be redrawn due to error
         self.objects_to_draw = expanded_rounds
         self.objects_types_to_draw = expanded_types
+        self.trials_to_draw=expanded_trials
 
         yarpinfo(f"Objects to draw: {self.objects_to_draw}\nErrors at rounds: {REDO_ROUNDS}\nMax rounds: {MAX_ROUNDS}")
 
@@ -85,6 +86,9 @@ class whiteboardApp(yarp.BottleCallback):
         guiinfo(f"Drawings will be saved in: {self.drawings_dir}")
 
 
+        with open(f"{self.drawings_dir}/order.txt", "w") as fp:
+            for trial in self.trials_to_draw:
+                fp.write(f"trial_{trial}\n")
 
         # Inizia primo round
         # self.start_round()
@@ -147,15 +151,15 @@ class whiteboardApp(yarp.BottleCallback):
         h = self.canvas.winfo_height()
 
         if self.current_round in REDO_ROUNDS:
-            message = f"The system did not recognize the sketch.\nPlease, redo the sketch representing the following {SKETCH_TYPE_LABELS[sketch_type]}: {label}"
+            message = f"The system did not recognize the sketch.\nPlease, redo the sketch representing the following {SKETCH_TYPE_LABELS[sketch_type]}:\n{label}"
         else:
-            message =  f"Please, make a sketch representing the following {SKETCH_TYPE_LABELS[sketch_type]}: {label}"
+            message =  f"Please, make a sketch representing the following {SKETCH_TYPE_LABELS[sketch_type]}:\n{label}"
 
         self.canvas.create_text(
             w / 2,
             h / 2,
             text=message,
-            font=("Arial", 18, "bold"),
+            font=("Arial", 40, "bold"),
             fill="black"
         )
         self.canvas.update()  # forces the update of the canvas
@@ -170,6 +174,7 @@ class whiteboardApp(yarp.BottleCallback):
         self.finish_btn.place(relx=0.5, rely=0.95, anchor="center")
 
         self.current_label = self.objects_to_draw[self.current_round]
+        self.current_trial = self.trials_to_draw[self.current_round]
         self.current_type= self.objects_types_to_draw[self.current_round]
         self.positions = []
         self.show_label_on_canvas(self.current_label, self.current_type)
@@ -212,7 +217,7 @@ class whiteboardApp(yarp.BottleCallback):
         if not self.positions:
             return
         timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        base_name = f"{self.current_label}_{timestamp}"
+        base_name = f"trial_{self.current_trial}_{self.dir_number}_{timestamp}"
         base_name = base_name.replace(" ", "_") # not tested
 
         # Salva immagine
@@ -220,10 +225,10 @@ class whiteboardApp(yarp.BottleCallback):
         y = self.root.winfo_rooty() + self.canvas.winfo_y()
         x1 = x + self.canvas.winfo_width()
         y1 = y + self.canvas.winfo_height()
-        ImageGrab.grab(bbox=(x, y, x1, y1)).save(f"{self.drawings_dir}/{self.dir_number}_{base_name}.png")
+        ImageGrab.grab(bbox=(x, y, x1, y1)).save(f"{self.drawings_dir}/{base_name}.png")
 
         # Salva CSV
-        with open(f"{self.drawings_dir}/{self.dir_number}_{base_name}.csv", "w", newline="") as f:
+        with open(f"{self.drawings_dir}/{base_name}.csv", "w", newline="") as f:
             writer = csv.writer(f)
             writer.writerow(["time", "x", "y", "mouse_pressed"])
             writer.writerows(self.positions)
