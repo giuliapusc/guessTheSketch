@@ -50,6 +50,7 @@ class whiteboardApp(yarp.BottleCallback):
         # Lista di oggetti da disegnare
         # double x[0] objects with x[1]==1 are objects to be redrawn due to error
         self.objects_to_draw = expanded_rounds
+        self.objects_types_to_draw = expanded_types
 
         yarpinfo(f"Objects to draw: {self.objects_to_draw}\nErrors at rounds: {REDO_ROUNDS}\nMax rounds: {MAX_ROUNDS}")
 
@@ -137,7 +138,7 @@ class whiteboardApp(yarp.BottleCallback):
         self.out_port.write()
         guiinfo(f"Sending end_round...")
 
-    def show_label_on_canvas(self, label):
+    def show_label_on_canvas(self, label, sketch_type):
         """Mostra il nome dell'oggetto al centro del canvas."""
         self.canvas.delete("all")
         self.root.update_idletasks()  # forces the update of the canvas
@@ -146,9 +147,9 @@ class whiteboardApp(yarp.BottleCallback):
         h = self.canvas.winfo_height()
 
         if self.current_round in REDO_ROUNDS:
-            message = f"Rifai il disegno di: {label}"
+            message = f"The system did not recognize the sketch.\nPlease, redo the sketch representing the following {SKETCH_TYPE_LABELS[sketch_type]}: {label}"
         else:
-            message = f"Disegna: {label}"
+            message =  f"Please, make a sketch representing the following {SKETCH_TYPE_LABELS[sketch_type]}: {label}"
 
         self.canvas.create_text(
             w / 2,
@@ -169,8 +170,9 @@ class whiteboardApp(yarp.BottleCallback):
         self.finish_btn.place(relx=0.5, rely=0.95, anchor="center")
 
         self.current_label = self.objects_to_draw[self.current_round]
+        self.current_type= self.objects_types_to_draw[self.current_round]
         self.positions = []
-        self.show_label_on_canvas(self.current_label)
+        self.show_label_on_canvas(self.current_label, self.current_type)
         self.root.after(2000, self.clear_and_start_drawing)  # Only show label for 2 seconds
 
     def clear_and_start_drawing(self):

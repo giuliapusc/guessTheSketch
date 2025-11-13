@@ -55,20 +55,27 @@ thinking_sounds = (
 #                 ('gatto', 1)]
 
 
+SKETCH_TYPE_LABELS={"O": "object", "A": "action", "I": "interaction"}
+
 df=pd.read_csv("/usr/local/src/robot/cognitiveInteraction/guessthesketch/modules/guessTheSketch/drawing_list.csv", header=None)
 TO_DRAW_LIST=list(df.itertuples(index=False, name=None))
 
 MAX_ROUNDS = len(TO_DRAW_LIST) + sum(x[1] for x in TO_DRAW_LIST)
 
 expanded_rounds = []
+expanded_types = []
 REDO_ROUNDS = []   # indici 0-based dei redo nel vettore espanso
 
 
-for name, redo in TO_DRAW_LIST:
+for name, sketch_type, redo in TO_DRAW_LIST:
     expanded_rounds.append(name)
+    expanded_types.append(sketch_type)
+
     if redo == 1:
         REDO_ROUNDS.append(len(expanded_rounds) - 1)  # salva indice della prima volta
+        
         expanded_rounds.append(name)  # aggiungi il redo
+        expanded_types.append(sketch_type)
 
 # add 1 to every element in REDO_ROUNDS 
 REDO_ROUNDS = [x + 1 for x in REDO_ROUNDS]
