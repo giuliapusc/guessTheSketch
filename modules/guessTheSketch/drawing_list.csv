@@ -1,3 +1,24 @@
-palla,1
-mela,0
-io mangio la mela,0
+an orange,O,0
+an apple,O,0
+a young girl,O,0
+a humanoid robot,O,1
+a cat,O,0
+a dog,O,0
+a house,O,0
+a park,O,1
+The young girl takes the orange,A,0
+The humanoid robot takes the apple,A,0
+The young girl moves the apple,A,0
+The humanoid robot moves the orange,A,1
+The young girl pets the cat,A,0
+The humanoid robot pets the dog,A,0
+The young girl goes to the house,A,0
+The humanoid robot goes to the park,A,1
+The young girl takes the cat to the house,I,0
+The humanoid robot takes the cat to the park,I,0
+The young girl waves at the humanoid robot,I,0
+The humanoid robot waves at the young girl,I,1
+The young girl smiles at the humanoid robot,I,0
+The humanoid robot is angry at the young girl,I,0
+The young girl is surprised by the humanoid robot,I,0
+The humanoid robot is surprised by the young girl,I,1

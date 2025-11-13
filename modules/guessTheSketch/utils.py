@@ -60,7 +60,7 @@ SKETCH_TYPE_LABELS={"O": "object", "A": "action", "I": "interaction"}
 df=pd.read_csv("/usr/local/src/robot/cognitiveInteraction/guessthesketch/modules/guessTheSketch/drawing_list.csv", header=None)
 TO_DRAW_LIST=list(df.itertuples(index=False, name=None))
 
-MAX_ROUNDS = len(TO_DRAW_LIST) + sum(x[1] for x in TO_DRAW_LIST)
+MAX_ROUNDS = len(TO_DRAW_LIST) + sum(x[2] for x in TO_DRAW_LIST)
 
 expanded_rounds = []
 expanded_types = []

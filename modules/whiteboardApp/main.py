@@ -155,7 +155,7 @@ class whiteboardApp(yarp.BottleCallback):
             w / 2,
             h / 2,
             text=message,
-            font=("Arial", 60, "bold"),
+            font=("Arial", 18, "bold"),
             fill="black"
         )
         self.canvas.update()  # forces the update of the canvas
