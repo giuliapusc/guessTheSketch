@@ -178,7 +178,7 @@ class whiteboardApp(yarp.BottleCallback):
         self.current_type= self.objects_types_to_draw[self.current_round]
         self.positions = []
         self.show_label_on_canvas(self.current_label, self.current_type)
-        self.root.after(10000, self.clear_and_start_drawing)  # Only show label for 10 seconds
+        self.root.after(7000, self.clear_and_start_drawing)  # Only show label for 7 seconds
 
     def clear_and_start_drawing(self):
         """Pulisce il canvas e permette di iniziare a disegnare."""
