@@ -151,9 +151,9 @@ class whiteboardApp(yarp.BottleCallback):
         h = self.canvas.winfo_height()
 
         if self.current_round in REDO_ROUNDS:
-            message = f"The system did not recognize the sketch.\nPlease, redo the sketch representing the following {SKETCH_TYPE_LABELS[sketch_type]}:\n{label}"
+            message = f"The system did not recognize the sketch.\nPlease, redo the sketch representing the following {SKETCH_TYPE_LABELS[sketch_type]}:\n\n{label}"
         else:
-            message =  f"Please, make a sketch representing the following {SKETCH_TYPE_LABELS[sketch_type]}:\n{label}"
+            message =  f"Please, make a sketch representing the following {SKETCH_TYPE_LABELS[sketch_type]}:\n\n{label}"
 
         self.canvas.create_text(
             w / 2,
@@ -178,7 +178,7 @@ class whiteboardApp(yarp.BottleCallback):
         self.current_type= self.objects_types_to_draw[self.current_round]
         self.positions = []
         self.show_label_on_canvas(self.current_label, self.current_type)
-        self.root.after(2000, self.clear_and_start_drawing)  # Only show label for 2 seconds
+        self.root.after(10000, self.clear_and_start_drawing)  # Only show label for 10 seconds
 
     def clear_and_start_drawing(self):
         """Pulisce il canvas e permette di iniziare a disegnare."""
@@ -217,7 +217,7 @@ class whiteboardApp(yarp.BottleCallback):
         if not self.positions:
             return
         timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        base_name = f"trial_{self.current_trial}_{self.dir_number}_{timestamp}"
+        base_name = f"trial_{self.current_trial}_subj_{self.dir_number}_{timestamp}"
         base_name = base_name.replace(" ", "_") # not tested
 
         # Salva immagine
