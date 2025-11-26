@@ -1,6 +1,7 @@
 # Author: Giulia Pusceddu 
 
 import tkinter as tk
+from tkinter import messagebox
 from PIL import ImageGrab
 import csv
 import os
@@ -16,11 +17,6 @@ from utils import *
 class whiteboardApp(yarp.BottleCallback):
     def __init__(self, root):
         super(whiteboardApp, self).__init__()
-
-        print(f"Expanded trials: {expanded_trials}")
-        print(f"Expanded rounds: {expanded_rounds}")
-        print(f"Expanded types: {expanded_types}")
-        print(f"Redo rounds (0-based indices): {REDO_ROUNDS}")
 
         # --- Yarp ---
         self.module_name = "whiteboardApp"
@@ -58,7 +54,7 @@ class whiteboardApp(yarp.BottleCallback):
         self.objects_types_to_draw = expanded_types
         self.trials_to_draw=expanded_trials
 
-        yarpinfo(f"Objects to draw: {self.objects_to_draw}\nErrors at rounds: {REDO_ROUNDS}\nMax rounds: {MAX_ROUNDS}")
+        # yarpinfo(f"Objects to draw: {self.objects_to_draw}\nErrors at rounds: {REDO_ROUNDS}\nMax rounds: {MAX_ROUNDS}")
 
     
         self.current_round = 0
@@ -125,13 +121,26 @@ class whiteboardApp(yarp.BottleCallback):
         try:
             cmd = data.get(0).asVocab32()
             # cmd = data.get(0).asString()
-            guiinfo(VOCAB_NEXT_SKETCH)
             # guiinfo(f"Received command: {cmd}")
+
             if cmd == VOCAB_NEXT_SKETCH:
-                # todo: aggiungere error/non error
                 guiinfo("Received NEXT ROUND command.")
                 self.start_round()
-    
+
+            elif cmd == VOCAB_UNDERSTOOD:
+                guiinfo("Received UNDERSTOOD command.")
+
+                # Open dialogue to ask if the sketch has been understood Y/N
+                answer = messagebox.askyesno("Question", "Did iCub understand the sketch?")
+                guiinfo(f"User answered: {'Yes' if answer else 'No'}")
+
+                # save answer in file. First column is trial number, second column is answer
+                with open(f"{self.drawings_dir}/icub_understood.txt", "a") as f:
+                    f.write(f"{self.current_trial},{int(answer)}\n") 
+
+                # when the user answered, send a message to the backend
+                self.send_to_backend()
+
         except Exception as e:
             print(f"Callback Error -> {e}")
 
@@ -157,6 +166,7 @@ class whiteboardApp(yarp.BottleCallback):
 
         if self.current_round in REDO_ROUNDS:
             message = f"The system did not recognize the sketch.\nPlease, redo the sketch representing the following {SKETCH_TYPE_LABELS[sketch_type]}:\n\n{label}"
+            # message = f"ICub did not recognize the sketch.\nPlease, redo the sketch representing the following {SKETCH_TYPE_LABELS[sketch_type]}:\n\n{label}"
         else:
             message =  f"Please, make a sketch representing the following {SKETCH_TYPE_LABELS[sketch_type]}:\n\n{label}"
 

@@ -10,6 +10,8 @@ import os
 import json
 from datetime import datetime
 from utils import *
+import tkinter as tk
+from tkinter import messagebox
 
 
 class guessTheSketch(yarp.RFModule):
@@ -19,7 +21,9 @@ class guessTheSketch(yarp.RFModule):
     """
 
     def __init__(self):
-        yarp.RFModule.__init__(self
+        yarp.RFModule.__init__(self)
+
+        #TODO use expanded trials from utils for actions 
 
         # --- Module parameters ---
         self.module_name = None
@@ -166,29 +170,24 @@ class guessTheSketch(yarp.RFModule):
 
             elif self.current_state == 'action':
                 yarpinfo("State is: ACTION")
-                self.icub_do("action")
-                time.sleep(1)
-
+                # Take action name from action list file
+                # Find row in action list with current expanded trial number indexing with current round
+                # action name is listed in second column of action_list.csv
+                actions = ICUB_ACTIONS[self.current_round -1]
+                for action in actions:
+                    self.icub_do(action)
+                    time.sleep(1)
+                
                 self.current_state = 'understood'
 
             elif self.current_state == 'understood':
                 yarpinfo("State is: UNDERSTOOD")
-                #TODO open a window to ask if the sketch has been understood Y/N
-                
-                # Remain in this state until we get the answer
-                # save the answer
+                self.send_to_GUI() 
 
-                if self.current_round in REDO_ROUNDS:
-                    self.external_voice("Aicab non ha capito. Rifai il disegno.")
-                    time.sleep(5)
-                elif self.current_round -1 in REDO_ROUNDS:
-                    self.external_voice("Grazie! Ora Aicab ha capito.")
-                    time.sleep(2)
-                else: 
-                    self.external_voice("Aicab ha capito.")
-                    time.sleep(2)
+                msg_from_whiteboard = self.read_vocab(buffered_port=self.in_port)
 
-                self.current_state = 'startRound'
+                if msg_from_whiteboard ==  VOCAB_END_SKETCH:
+                    self.current_state = 'startRound'
 
             elif self.current_state == 'endState':
                 yarpinfo("State is: END STATE.\n The experiment ends.")
@@ -260,7 +259,7 @@ class guessTheSketch(yarp.RFModule):
                 msg = msg_bottle.get(0).asVocab32()
             
             # cmd = data.get(0).asVocab32()
-            debug(f"reading vocab32: {msg}")
+            # debug(f"reading vocab32: {msg}")
         return msg
 
     def send_to_GUI(self):
@@ -279,6 +278,10 @@ class guessTheSketch(yarp.RFModule):
         elif self.current_state == 'startRound':
             bottle.addInt32(VOCAB_NEXT_SKETCH)
             yarpinfo(f"Sent NEXT ROUND to GUI: {VOCAB_NEXT_SKETCH}")
+        
+        elif self.current_state == 'understood':
+            bottle.addInt32(VOCAB_UNDERSTOOD)
+            yarpinfo(f"Sent UNDERSTOOD to GUI: {VOCAB_UNDERSTOOD}")
 
         elif self.current_state == 'endState':
             bottle.addInt32(VOCAB_FINISH)

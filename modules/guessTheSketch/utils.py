@@ -38,6 +38,7 @@ VOCAB_PLAY = yarp.createVocab32('P', 'L', 'A', 'Y')
 VOCAB_NEXT_SKETCH = yarp.createVocab32('N', 'X', 'T')
 VOCAB_END_SKETCH = yarp.createVocab32('E', 'N', 'D')
 VOCAB_FINISH = yarp.createVocab32('F', 'I', 'N', 'I')
+VOCAB_UNDERSTOOD = yarp.createVocab32('U', 'N', 'D', 'R')
 
 # ----------------------------------------------------------------------------
 # ------------Comments by icub.---------------
@@ -86,3 +87,15 @@ for trial, name, sketch_type, redo in TO_DRAW_LIST:
 
 # add 1 to every element in REDO_ROUNDS 
 REDO_ROUNDS = [x + 1 for x in REDO_ROUNDS]
+
+# Action list for iCub 
+df = pd.read_csv("/usr/local/src/robot/cognitiveInteraction/guessthesketch/modules/guessTheSketch/action_list.csv", 
+                 names=["id", "action"])
+grouped_df = df.groupby("id")["action"].apply(list).to_dict()
+
+ICUB_ACTIONS = []
+
+for trial in expanded_trials:
+    trial = str(trial)   
+    if trial in grouped_df:
+        ICUB_ACTIONS.append(grouped_df[trial])
