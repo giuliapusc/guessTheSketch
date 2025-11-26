@@ -1,3 +1,6 @@
 pandas
 numpy
 Pillow
+scikit-image
+argparse
+matplotlib
