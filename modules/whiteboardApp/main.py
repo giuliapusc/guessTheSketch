@@ -17,6 +17,11 @@ class whiteboardApp(yarp.BottleCallback):
     def __init__(self, root):
         super(whiteboardApp, self).__init__()
 
+        print(f"Expanded trials: {expanded_trials}")
+        print(f"Expanded rounds: {expanded_rounds}")
+        print(f"Expanded types: {expanded_types}")
+        print(f"Redo rounds (0-based indices): {REDO_ROUNDS}")
+
         # --- Yarp ---
         self.module_name = "whiteboardApp"
         self.player_id = None

@@ -99,22 +99,40 @@ press_key(){
 # FUNCTIONS EYES:                                                               #
 #######################################################################################
 
-# Look right
-look_p1(){
+look_at_participant(){
   echo "abs 15 0 0" | yarp write ... /iKinGazeCtrl/angles:i
 }
 
-# Look in front
-look_p2(){
+look_at_cat(){
   echo "abs 0 0 0" | yarp write ... /iKinGazeCtrl/angles:i
 }
 
 # Look left
-look_p3(){
+look_at_dog(){
   echo "abs -15 0 0" | yarp write ... /iKinGazeCtrl/angles:i
 }
 
-look_down(){
+look_at_apple(){
+  echo "abs 0 -15 0" | yarp write ... /iKinGazeCtrl/angles:i
+}
+
+look_at_orange(){
+  echo "abs 0 -15 0" | yarp write ... /iKinGazeCtrl/angles:i
+}
+
+look_at_house(){
+  echo "abs 0 -15 0" | yarp write ... /iKinGazeCtrl/angles:i
+}
+
+look_at_park(){
+  echo "abs 0 -15 0" | yarp write ... /iKinGazeCtrl/angles:i
+}
+
+look_at_giovanna(){
+  echo "abs 0 -15 0" | yarp write ... /iKinGazeCtrl/angles:i
+}
+
+look_at_navel(){
   echo "abs 0 -15 0" | yarp write ... /iKinGazeCtrl/angles:i
 }
 

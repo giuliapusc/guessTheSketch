@@ -19,7 +19,7 @@ class guessTheSketch(yarp.RFModule):
     """
 
     def __init__(self):
-        yarp.RFModule.__init__(self)
+        yarp.RFModule.__init__(self
 
         # --- Module parameters ---
         self.module_name = None
@@ -162,7 +162,14 @@ class guessTheSketch(yarp.RFModule):
                 msg_from_whiteboard = self.read_vocab(buffered_port=self.in_port)
 
                 if msg_from_whiteboard ==  VOCAB_END_SKETCH:
-                    self.current_state = 'understood'
+                    self.current_state = 'action'
+
+            elif self.current_state == 'action':
+                yarpinfo("State is: ACTION")
+                self.icub_do("action")
+                time.sleep(1)
+
+                self.current_state = 'understood'
 
             elif self.current_state == 'understood':
                 yarpinfo("State is: UNDERSTOOD")

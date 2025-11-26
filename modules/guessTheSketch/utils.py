@@ -82,7 +82,7 @@ for trial, name, sketch_type, redo in TO_DRAW_LIST:
         
         expanded_trials.append(f"{trial}E")
         expanded_rounds.append(name)  # aggiungi il redo
-        expanded_types.append(sketch_type)
+        expanded_types.append(sketch_type)     
 
 # add 1 to every element in REDO_ROUNDS 
 REDO_ROUNDS = [x + 1 for x in REDO_ROUNDS]
