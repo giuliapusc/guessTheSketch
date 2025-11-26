@@ -172,6 +172,7 @@ class whiteboardApp(yarp.BottleCallback):
         self.canvas.delete("all")
         # make finito button appear again
         self.finish_btn.place(relx=0.5, rely=0.95, anchor="center")
+        self.close_btn.place(relx=0.98, rely=0.02, anchor="ne")
 
         self.current_label = self.objects_to_draw[self.current_round]
         self.current_trial = self.trials_to_draw[self.current_round]
@@ -219,6 +220,13 @@ class whiteboardApp(yarp.BottleCallback):
         timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         base_name = f"trial_{self.current_trial}_subj_{self.dir_number}_{timestamp}"
         base_name = base_name.replace(" ", "_") # not tested
+
+        # Nascondi bottoni prima dello screenshot
+        self.close_btn.place_forget()
+        self.finish_btn.place_forget()
+
+        self.root.update()
+        time.sleep(0.1) # wait for UI to update
 
         # Salva immagine
         x = self.root.winfo_rootx() + self.canvas.winfo_x()
