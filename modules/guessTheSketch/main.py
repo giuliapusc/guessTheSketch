@@ -24,6 +24,7 @@ class guessTheSketch(yarp.RFModule):
         yarp.RFModule.__init__(self)
 
         yarpinfo(ICUB_ACTIONS)
+        yarpinfo(expanded_rounds)
 
         #TODO use expanded trials from utils for actions 
 
@@ -175,6 +176,7 @@ class guessTheSketch(yarp.RFModule):
                 # Take action name from action list file
                 # Find row in action list with current expanded trial number indexing with current round
                 # action name is listed in second column of action_list.csv
+                yarpinfo(f"Current round: {self.current_round}")
                 actions = ICUB_ACTIONS[self.current_round - 1]
                 yarpinfo(actions)
                 for action in actions:

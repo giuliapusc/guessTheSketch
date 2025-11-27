@@ -55,7 +55,6 @@ class whiteboardApp(yarp.BottleCallback):
         self.trials_to_draw=expanded_trials
 
         # yarpinfo(f"Objects to draw: {self.objects_to_draw}\nErrors at rounds: {REDO_ROUNDS}\nMax rounds: {MAX_ROUNDS}")
-
     
         self.current_round = 0
 
