@@ -174,9 +174,12 @@ class guessTheSketch(yarp.RFModule):
                 # Find row in action list with current expanded trial number indexing with current round
                 # action name is listed in second column of action_list.csv
                 actions = ICUB_ACTIONS[self.current_round -1]
+                yarpinfo(actions)
                 for action in actions:
                     self.icub_do(action)
                     time.sleep(1)
+
+                self.icub_do("start_pos")
                 
                 self.current_state = 'understood'
 

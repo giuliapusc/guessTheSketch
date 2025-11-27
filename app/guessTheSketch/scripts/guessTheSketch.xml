@@ -6,13 +6,59 @@
 
 	<module>
 		<name>guessTheSketch</name>
-		<node>localhost</node>
+		<node>icubsrv</node>
 	</module>
 
 	<module>
 		<name>whiteboardApp</name>
-		<node>localhost</node>
+		<node>icubsrv</node>
 	</module>
+
+	<module>
+        <name>iKinGazeCtrl</name>
+		<parameters>--from iKinGazeCtrl.ini</parameters>
+        <node>icubsrv</node>
+        </module>
+	<module>
+
+        <name>ctpService</name>
+		<parameters>--robot icub --part right_arm</parameters>
+        <node>icubsrv</node>
+    </module>
+
+	<module>
+        <name>ctpService</name>
+		<parameters>--robot icub --part left_arm</parameters>
+        <node>icubsrv</node>
+    </module>
+
+	<module>
+        <name>ctpService</name>
+		<parameters>--robot icub --part torso</parameters>
+        <node>icubsrv</node>
+    </module>
+
+	<module>
+        <name>interactionInterface</name>
+		<parameters>--config guessTheSketch.sh --context guessTheSketch </parameters>
+        <node>icubsrv</node>
+    </module>
+
+	<module>
+		<name>yarprobotinterface</name>
+		<parameters>--context faceExpressions --config serialPortFaceExpressions.xml</parameters>
+		<node>icub-head</node>
+		<tag>face_device</tag>
+	</module>
+   
+	<module>
+		<name>emotionInterface</name>
+		<parameters>--name /icub/face/emotions --context faceExpressions --from emotions_rfe.ini</parameters>
+		<node>icub-head</node>
+		<tag>emotions_interface</tag>
+	</module>
+
+
 
     <!-- ==================== CONNECTIONS ==================== -->
 
@@ -27,5 +73,18 @@
 	  <input>/whiteboard:i</input>
 	  <protocol>tcp</protocol>
 	</connection>
+
+	<connection>
+		<from>/guessTheSketch/cmd:o</from>
+		<to>/interactionInterface</to>
+		<protocol>tcp</protocol>
+	</connection>
+
+	<connection>
+		  <from>/icub/face/emotions/out</from>
+		  <to>/icub/face/raw/in</to>
+		  <protocol>tcp</protocol>
+	</connection>
+
 
 </application>
