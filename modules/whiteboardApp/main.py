@@ -40,7 +40,7 @@ class whiteboardApp(yarp.BottleCallback):
         self.canvas.pack(fill="both", expand=True)
 
         # Pulsante "Finito"
-        self.finish_btn = tk.Button(root, text="Finito", command=self.finish_drawing, font=("Arial", 20))
+        self.finish_btn = tk.Button(root, text="Finished", command=self.finish_drawing, font=("Arial", 20))
         # self.finish_btn.pack(side=tk.BOTTOM, pady=20)
         #self.finish_btn.place(relx=0.5, rely=0.95, anchor="center")
 
@@ -130,12 +130,16 @@ class whiteboardApp(yarp.BottleCallback):
                 guiinfo("Received UNDERSTOOD command.")
 
                 # Open dialogue to ask if the sketch has been understood Y/N
-                answer = messagebox.askyesno("Question", "Did iCub understand the sketch?")
+                answer = messagebox.askyesno("Question", "Did iCub understand your sketch?")
                 guiinfo(f"User answered: {'Yes' if answer else 'No'}")
+
+                # ask whether icub interpreted as an object, action or interaction
+                interpretation = self.show_dialog()
+                guiinfo(f"Interpretation: {interpretation}")
 
                 # save answer in file. First column is trial number, second column is answer
                 with open(f"{self.drawings_dir}/icub_understood.txt", "a") as f:
-                    f.write(f"{self.current_trial},{int(answer)}\n") 
+                    f.write(f"{self.current_trial},{int(answer)},{interpretation}\n") 
 
                 # when the user answered, send a message to the backend
                 self.send_to_backend()
@@ -164,8 +168,8 @@ class whiteboardApp(yarp.BottleCallback):
         h = self.canvas.winfo_height()
 
         if self.current_round in REDO_ROUNDS:
-            message = f"The system did not recognize the sketch.\nPlease, redo the sketch representing the following {SKETCH_TYPE_LABELS[sketch_type]}:\n\n{label}"
-            # message = f"ICub did not recognize the sketch.\nPlease, redo the sketch representing the following {SKETCH_TYPE_LABELS[sketch_type]}:\n\n{label}"
+            # message = f"The system did not recognize the sketch.\nPlease, redo the sketch representing the following {SKETCH_TYPE_LABELS[sketch_type]}:\n\n{label}"
+            message = f"ICub did not recognize the sketch.\nPlease, redo the sketch representing the following {SKETCH_TYPE_LABELS[sketch_type]}:\n\n{label}"
         else:
             message =  f"Please, make a sketch representing the following {SKETCH_TYPE_LABELS[sketch_type]}:\n\n{label}"
 
@@ -291,6 +295,48 @@ class whiteboardApp(yarp.BottleCallback):
         self.canvas.update_idletasks()
         self.canvas.update()
         guiinfo("Final message displayed.")
+
+    def center_window(self, window, w=400, h=200):
+        window.update_idletasks()
+        sw = window.winfo_screenwidth()
+        sh = window.winfo_screenheight()
+        x = (sw // 2) - (w // 2)
+        y = (sh // 2) - (h // 2)
+        window.geometry(f"{w}x{h}+{x}+{y}")
+
+    def show_dialog(self, title="iCub's interpretation", options=None):
+        if options is None:
+            options = ["Object", "Action", "Interaction"]
+
+        # Main root (hidden)
+        root = tk.Tk()
+        root.withdraw()
+
+        # Dialog window
+        dialog = tk.Toplevel(root)
+        dialog.title(title)
+        dialog.grab_set()  # Make it modal
+
+        # Center the dialog
+        self.center_window(dialog)
+
+        # Title label
+        tk.Label(dialog, text="iCub interpreted the sketch as an:", font=("Arial", 18)).pack(pady=10)
+
+        # Button callback
+        def select(value):
+            self.answer = value
+            dialog.destroy()
+
+        # Create buttons for each option
+        for opt in options:
+            tk.Button(dialog, text=opt, width=15, command=lambda o=opt: select(o)).pack(pady=3)
+
+        # Wait until window is closed
+        root.wait_window(dialog)
+        root.destroy()
+
+        return self.answer
 
 if __name__ == "__main__":
     

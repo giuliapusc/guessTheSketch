@@ -40,6 +40,7 @@ greet_right_arm(){
 }
 
 start_pos(){
+  neutral
   echo "abs 0 -5 0" | yarp write ... /iKinGazeCtrl/angles:i
   echo "ctpq time 2 off 0 pos (0 0 0)" | yarp rpc /ctpservice/torso/rpc
   sleep 1.0
@@ -57,19 +58,19 @@ look_at_participant(){
 }
 
 look_at_cat(){
-  echo "abs 5 -35 0" | yarp write ... /iKinGazeCtrl/angles:i
+  echo "abs 10 -40 0" | yarp write ... /iKinGazeCtrl/angles:i
 }
 
 look_at_dog(){
-  echo "abs -5 -35 0" | yarp write ... /iKinGazeCtrl/angles:i
+  echo "abs -19 -40 0" | yarp write ... /iKinGazeCtrl/angles:i
 }
 
 look_at_orange(){
-  echo "abs 25 -30 0" | yarp write ... /iKinGazeCtrl/angles:i
+  echo "abs 15 -30 0" | yarp write ... /iKinGazeCtrl/angles:i
 }
 
 look_at_apple(){
-  echo "abs -25 -30 0" | yarp write ... /iKinGazeCtrl/angles:i
+  echo "abs -15 -30 0" | yarp write ... /iKinGazeCtrl/angles:i
 }
 
 look_at_house(){

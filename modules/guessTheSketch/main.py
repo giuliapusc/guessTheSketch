@@ -133,13 +133,15 @@ class guessTheSketch(yarp.RFModule):
             if self.current_state == 'intro':
                 yarpinfo("State is: INTRO\n")
 
-                # self.icub_do("intro")
-                # self.icub_greets = False
-                sentence = f"""speak "Ciao!" """
-                self.icub_do("sentence")
-                time.sleep(2)
-                self.external_voice("Benvenuti!")
-                time.sleep(2)
+                # icub in starting position
+                self.icub_do("start_pos")
+                time.sleep(10)
+
+                # sentence = f"""speak "Ciao!" """
+                # self.icub_do("sentence")
+                # time.sleep(2)
+                # self.external_voice("Benvenuti!")
+                # time.sleep(2)
 
                 self.current_state = 'rules'
 
@@ -148,14 +150,15 @@ class guessTheSketch(yarp.RFModule):
                 # Send RULES to GUI
                 self.send_to_GUI()
 
-                speaker_msg("Rules")
-                self.external_voice("Queste sono le regole!")
-                time.sleep(5)
+                # speaker_msg("Rules")
+                # self.external_voice("Queste sono le regole!")
+                # time.sleep(5)
 
                 self.current_state = 'startRound'
 
             elif self.current_state == 'startRound':
                 yarpinfo("State is: START ROUND")
+                yarpinfo(f"Current round: {self.current_round} out of {MAX_ROUNDS}")
                 if self.current_round >= MAX_ROUNDS:
                     self.current_state = 'endState'
                 else: 
@@ -173,10 +176,7 @@ class guessTheSketch(yarp.RFModule):
 
             elif self.current_state == 'action':
                 yarpinfo("State is: ACTION")
-                # Take action name from action list file
-                # Find row in action list with current expanded trial number indexing with current round
-                # action name is listed in second column of action_list.csv
-                yarpinfo(f"Current round: {self.current_round}")
+
                 actions = ICUB_ACTIONS[self.current_round - 1]
                 yarpinfo(actions)
                 for action in actions:
@@ -198,10 +198,10 @@ class guessTheSketch(yarp.RFModule):
 
             elif self.current_state == 'endState':
                 yarpinfo("State is: END STATE.\n The experiment ends.")
-                self.external_voice("Grazie per aver partecipato!")
-                time.sleep(2)
-                sentence = f"""speak "Arrivederci!" """
-                self.icub_do(sentence)
+                # self.external_voice("Grazie per aver partecipato!")
+                # time.sleep(2)
+                # sentence = f"""speak "Arrivederci!" """
+                # self.icub_do(sentence)
                 
                 self.close()
                 self.interruptModule()

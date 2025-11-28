@@ -64,7 +64,7 @@ df.insert(0, 'trial', range(1, 1+len(df)))
 
 TO_DRAW_LIST=list(df.itertuples(index=False, name=None))
 ### Change seed here 
-random.seed(42)
+random.seed(2)
 random.shuffle(TO_DRAW_LIST)
 
 MAX_ROUNDS = len(TO_DRAW_LIST) + sum(x[3] for x in TO_DRAW_LIST)
