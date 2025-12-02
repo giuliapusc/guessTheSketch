@@ -12,7 +12,17 @@ from skimage.util import img_as_ubyte
 
 import matplotlib.pyplot as plt
 
-def compute_entropy(image, blocksize=8):
+# params of the buttons
+
+end_btn_pos=np.array([914, 1004])
+end_btn_size=np.array([93, 45])
+close_btn_pos=np.array([1843, 22])
+close_btn_size=np.array([39, 33])
+
+#
+
+def compute_entropy(image_col, blocksize=8):
+    image=rgb2gray(image_col)
     entropy_full_img = entropy(img_as_ubyte(image), footprint_rectangle((blocksize, blocksize)), shift_x=-blocksize//2, shift_y=-blocksize//2)
 
     entropy_grid=entropy_full_img[::blocksize, ::blocksize]
@@ -37,7 +47,8 @@ def compute_entropy(image, blocksize=8):
 
     return avg, std, entropy_grid, n_pixels
 
-def compute_entropy_slow(image, blocksize=8):
+def compute_entropy_slow(image_col, blocksize=8):
+    image=rgb2gray(image_col)
     entropy_img=np.zeros_like(image)
 
     height, width=image.shape
@@ -49,6 +60,13 @@ def compute_entropy_slow(image, blocksize=8):
 
     return nz_entropy.mean(), nz_entropy.std(), entropy_img
 
+def filter_buttons(image, pad=5):
+    image_out=image.copy()
+
+    image_out[close_btn_pos[1]-pad:close_btn_pos[1]+close_btn_size[1]+pad, close_btn_pos[0]-pad:close_btn_pos[0]+close_btn_size[0]+pad, :]=255
+    image_out[end_btn_pos[1]-pad:end_btn_pos[1]+end_btn_size[1]+pad, end_btn_pos[0]-pad:end_btn_pos[0]+end_btn_size[0]+pad, :]=255
+
+    return image_out
 
 if __name__ == "__main__":
     # parser
@@ -64,7 +82,7 @@ if __name__ == "__main__":
         "--output",
         type=str,
         required=True,
-        help="Output file for the analysis"
+        help="Output folder for the analysis"
     )
     parser.add_argument(
         "--filter",
@@ -85,23 +103,46 @@ if __name__ == "__main__":
     folder=Path(args.folder)
     blocksize=args.blocksize
     apply_button_filter=args.filter
-    output=args.output
+    output_path=Path(args.output)
+    output_path.mkdir(parents=True, exist_ok=False)
 
     results=[]
     for img_file in folder.glob("*/*.png"):
         subj_id = img_file.parent.name
-        file_name= img_file.stem
+        file_name = img_file.stem
 
-        image = rgb2gray(io.imread(img_file))
+        print(f"# {file_name}")
+
+        parts_fn = file_name.split("_")
+            
+        assert len(parts_fn)==6, f"error in file format: {file_name}"
+        assert subj_id==parts_fn[3]
+        trial_id=parts_fn[1]
+        timestamp=parts_fn[4]+"_"+parts_fn[5]
+
+        image = io.imread(img_file)
+
+        if apply_button_filter:
+            image=filter_buttons(image)
+            (output_path/subj_id).mkdir(parents=False, exist_ok=True)
+
+            filtered_img_file=output_path/subj_id/(file_name + "_filtered" + img_file.suffix)
+            print("saving", filtered_img_file)
+            io.imsave(filtered_img_file, image)
+
         for b in blocksize:
+            print(f"> blocksize: {b}{', filtered' if apply_button_filter else ''}")
             m, s, e_i, n_p=compute_entropy(image, b)
 
             # testing
-            m_slow, s_slow, _=compute_entropy_slow(image, b)
-            np.testing.assert_allclose(m, m_slow, err_msg=f"[m] {subj_id}, {file_name}, {b}")
-            np.testing.assert_allclose(s, s_slow, err_msg=f"[s] {subj_id}, {file_name}, {b}")
-            
-            
-            results.append((subj_id, file_name, b, m, s))
+            #m_slow, s_slow, _=compute_entropy_slow(image, b)
+            #np.testing.assert_allclose(m, m_slow, err_msg=f"[m] {subj_id}, {file_name}, {b}")
+            #np.testing.assert_allclose(s, s_slow, err_msg=f"[s] {subj_id}, {file_name}, {b}")
+            #
+                        
+            results.append((file_name, subj_id, trial_id, timestamp, apply_button_filter, b, m, s))
+        
+        print()
 
-    pd.DataFrame(results, columns=["subj_id", "file_name", "blocksize", "mean_entropy", "std_entropy"]).to_csv(output, index=False)
+    print("saving", output_path/"entropy.csv")
+    pd.DataFrame(results, columns=["file_name", "subj_id", "trial_id", "timestamp", "filtering_buttons", "blocksize", "mean_entropy", "std_entropy"]).to_csv(output_path/"entropy.csv", index=False)

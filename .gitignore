@@ -2,7 +2,7 @@ build/
 drawings 
 
 analysis/drawing_metrics_summary.csv
-
+analysis/out
 
 # python gitignore
 
