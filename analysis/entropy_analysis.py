@@ -21,16 +21,15 @@ close_btn_size=np.array([39, 33])
 
 #
 
-def compute_entropy(image_col, blocksize=8):
-    image=rgb2gray(image_col)
-    entropy_full_img = entropy(img_as_ubyte(image), footprint_rectangle((blocksize, blocksize)), shift_x=-blocksize//2, shift_y=-blocksize//2)
+def compute_entropy(image, blocksize=8):
+    entropy_full_img = entropy(image, footprint_rectangle((blocksize, blocksize)), shift_x=-blocksize//2, shift_y=-blocksize//2)
 
     entropy_grid=entropy_full_img[::blocksize, ::blocksize]
 
     # compute the number of pixels for each block
-    height, width=image.shape
     n_pixels=np.full_like(entropy_grid, blocksize**2)
 
+    height, width=image.shape
     last_height=height%blocksize if height%blocksize!=0 else blocksize
     last_width=width%blocksize if width%blocksize!=0 else blocksize
 
@@ -47,14 +46,13 @@ def compute_entropy(image_col, blocksize=8):
 
     return avg, std, entropy_grid, n_pixels
 
-def compute_entropy_slow(image_col, blocksize=8):
-    image=rgb2gray(image_col)
-    entropy_img=np.zeros_like(image)
-
+def compute_entropy_slow(image, blocksize=8):
     height, width=image.shape
+
+    entropy_img=np.zeros((height, width))
     for i in range(0, height, blocksize):
         for j in range(0, width, blocksize):
-            entropy_img[i:i+blocksize,j:j+blocksize]=shannon_entropy(image[i:i+blocksize,j:j+blocksize])
+            entropy_img[i:i+blocksize, j:j+blocksize]=shannon_entropy(image[i:i+blocksize,j:j+blocksize])
 
     nz_entropy=entropy_img[entropy_img!=0]
 
@@ -67,6 +65,7 @@ def filter_buttons(image, pad=5):
     image_out[end_btn_pos[1]-pad:end_btn_pos[1]+end_btn_size[1]+pad, end_btn_pos[0]-pad:end_btn_pos[0]+end_btn_size[0]+pad, :]=255
 
     return image_out
+
 
 if __name__ == "__main__":
     # parser
@@ -95,7 +94,7 @@ if __name__ == "__main__":
         type=int,
         nargs='+', 
         default=[2, 4, 8, 16, 32, 64],
-        help="Block size as a list of integers (default: [2, 4, 8, 16, 32, 64]). Example: --blocksize 2, 4, 8, 16, 32, 64"
+        help="Block size as a list of integers (default: [2, 4, 8, 16, 32, 64]). Example: --blocksize 2 4 8 16 32 64"
     )
 
     args = parser.parse_args()
@@ -129,6 +128,13 @@ if __name__ == "__main__":
             filtered_img_file=output_path/subj_id/(file_name + "_filtered" + img_file.suffix)
             print("saving", filtered_img_file)
             io.imsave(filtered_img_file, image)
+
+        # cleaning and converting to grayscale
+        image[0, :, :]=255
+        image[-1, :, :]=255
+        image[:, 0, :]=255
+        image[:, -1, :]=255
+        image=img_as_ubyte(rgb2gray(image))
 
         for b in blocksize:
             print(f"> blocksize: {b}{', filtered' if apply_button_filter else ''}")
