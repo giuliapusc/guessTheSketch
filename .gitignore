@@ -4,7 +4,7 @@ plots/
 analysis/
 
 analysis/drawing_metrics_summary.csv
-
+analysis/out
 
 # python gitignore
 
