@@ -4,6 +4,7 @@ import math
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import numpy as np
+import re
 
 def analyze_drawing(csv_path, visualize=False):
     """Analizza un file CSV e restituisce le metriche e i tratti stimati."""
@@ -92,6 +93,13 @@ def analyze_drawing(csv_path, visualize=False):
     # Dimensioni disegno
     drawing_width = max(xs) - min(xs)
     drawing_height = max(ys) - min(ys)
+    
+    # trial number extraction
+    match = re.search(r"trial_(\d+)([A-Za-z]?)_subj", os.path.basename(csv_path))
+    if match:
+        number = int(match.group(1))          # parte numerica
+        letter = match.group(2)               # eventuale lettera
+        trial = f"{number:02d}{letter}"  
 
     # --- Visualizzazione ---
     if visualize:
@@ -114,6 +122,8 @@ def analyze_drawing(csv_path, visualize=False):
 
     return {
         "file": os.path.basename(csv_path),
+        "subject": re.search(r"subj_(\d+)_2025", os.path.basename(csv_path)).group(1),
+        "trial": trial,
         "strokes": stroke_count,
         "total_distance_px": round(total_dist, 2),
         "mean_velocity_px_s": round(mean_vel, 3),
@@ -126,10 +136,12 @@ def analyze_drawing(csv_path, visualize=False):
 
 
 if __name__ == "__main__":
-    folder = "drawings"
+    folder = "drawings/robot/06"
     results = []
 
-    for file in os.listdir(folder):
+    files = os.listdir(folder)
+    sorted_files = sorted(files)
+    for file in sorted_files:
         if file.endswith(".csv"):
             path = os.path.join(folder, file)
             metrics = analyze_drawing(path, visualize=False)
@@ -138,7 +150,7 @@ if __name__ == "__main__":
                 print(metrics)
     # Salva i risultati complessivi in un file CSV
     keys = results[0].keys()
-    with open("analysis/drawing_metrics_summary.csv", "w", newline="") as f:
+    with open("analysis/robot/06.csv", "w", newline="") as f:
         dict_writer = csv.DictWriter(f, fieldnames=keys)
         dict_writer.writeheader()
         dict_writer.writerows(results)

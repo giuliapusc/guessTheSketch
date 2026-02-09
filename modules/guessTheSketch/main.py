@@ -23,9 +23,6 @@ class guessTheSketch(yarp.RFModule):
     def __init__(self):
         yarp.RFModule.__init__(self)
 
-        yarpinfo(ICUB_ACTIONS)
-        yarpinfo(expanded_rounds)
-
         #TODO use expanded trials from utils for actions 
 
         # --- Module parameters ---

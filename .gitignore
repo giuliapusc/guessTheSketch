@@ -1,5 +1,7 @@
 build/
 drawings 
+plots/
+analysis/
 
 analysis/drawing_metrics_summary.csv
 
