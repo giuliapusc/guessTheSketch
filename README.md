@@ -107,3 +107,18 @@ At the end of the experiment stop the modules. You can use the up-right "x" to c
 
 - Author: Giulia Pusceddu
 - See repository top-level for contribution guidelines.
+
+### Conditions for use in research
+
+Permission to use this software, its data (including drawings and trace
+files) or any derived results in research is granted only under the
+following conditions, agreed in writing with the author:
+
+1. The author must be informed in advance of any publication, abstract,
+   poster, thesis or presentation that uses this software, its data or
+   results obtained with it.
+2. The author's contribution must be acknowledged in accordance with the
+   authorship policy of the relevant institution and with recognised
+   standards for research integrity (e.g. ICMJE and ACM authorship
+   criteria). Where the software constitutes a substantial contribution
+   to the work, the author must be offered co authorship.
